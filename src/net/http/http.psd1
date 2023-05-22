@@ -7,7 +7,8 @@ NestedModules = @(
     'http.psm1'
 )
 FunctionsToExport = @(
-    'Invoke-RawWebRequest'
+    'Invoke-RawWebRequest',
+    'Test-InvokeWebRequest'
 )
 AliasesToExport = @()
 VariablesToExport = '*'

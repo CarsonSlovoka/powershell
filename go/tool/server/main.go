@@ -58,6 +58,7 @@ func initUrls(m *http.ServeMux) error {
 	})
 
 	m.HandleFunc("/upload/", upload)
+	m.HandleFunc("/uploadWithAuth/", Auth(upload))
 
 	return nil
 }

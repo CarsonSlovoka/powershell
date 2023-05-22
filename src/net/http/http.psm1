@@ -95,7 +95,17 @@ function Invoke-RawWebRequest {
     Test-InvokeWebRequest
 #>
 function Test-InvokeWebRequest {
-    $apiPath = "upload"
+    param (
+        [Parameter()]
+        [switch]$withCredential
+    )
+    $apiPath = ""
+    if ($withCredential.IsPresent) {
+        $apiPath = "uploadWithAuth"
+    } else {
+        $apiPath = "upload"
+    }
+
     $uri = "http://127.0.0.1:12345/{0}/" -f $apiPath
     $srcFile = Get-Item (Join-Path $PSScriptRoot "../../../test/svg/keyboard.svg") -ErrorAction Stop
     $fileBytes = [System.IO.File]::ReadAllBytes($srcFile)
@@ -136,7 +146,22 @@ function Test-InvokeWebRequest {
         '' # 需要補上，不然會遇到錯誤: multipart: NextPart: EOF  # https://github.com/golang/go/blob/d75cc4b9c6e2acb4d0ed3d90c9a8b38094af281b/src/mime/multipart/multipart.go#L395-L402
     ) -join $LF
 
-    # $result = Invoke-WebRequest -Uri $uri -Credential $credential -Method Post -ContentType "multipart/form-data; boundary=$boundary" -UseBasicParsing -Body $bodyLines
-    $result = Invoke-WebRequest -Uri $uri -Method Post -ContentType "multipart/form-data; boundary=$boundary" -Body $bodyLines
+    $result = ""
+    if ($withCredential.IsPresent) {
+        $credential = Get-Credential # 會需要使用者自行輸入username, password
+        if ($credential -eq $null) {
+            return
+        }
+        # 加上Credential之後其實會訪問該網址兩次，第一次不帶憑據，Server應該回傳401 Unauthorized，要求提供憑據，在第二次請求才會包含憑據資訊
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            $result = Invoke-WebRequest -Uri $uri -Credential $credential -Method Post -ContentType "multipart/form-data; boundary=$boundary" -UseBasicParsing -Body $bodyLines -AllowUnencryptedAuthentication # 因為我們用的是http非https所以如果要傳送成功需要加上-AllowUnencryptedAuthentication，不然會出現錯誤 To suppress this warning and send plain text secrets over unencrypted networks
+        } else {
+            # powershell 5.1沒有AllowUnencryptedAuthentication，但是即便這樣是用http的連線也不會出現unencrypted networks的錯誤;
+            $result = Invoke-WebRequest -Uri $uri -Credential $credential -Method Post -ContentType "multipart/form-data; boundary=$boundary" -UseBasicParsing -Body $bodyLines
+        }
+
+    } else {
+        $result = Invoke-WebRequest -Uri $uri -Method Post -ContentType "multipart/form-data; boundary=$boundary" -Body $bodyLines
+    }
     Write-Output $result
 }

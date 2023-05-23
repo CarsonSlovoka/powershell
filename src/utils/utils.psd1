@@ -20,7 +20,8 @@ FunctionsToExport = @(
     'MyHelp',
 
     # cmd
-    'Set-ByPass'
+    'Set-ByPass',
+    'Set-Prompt'
 )
 VariablesToExport = '*' # 還是要手動Import-Module才可以使用該變數
 # VariablesToExport = @( # 不需要個別導入，因為只有Export-ModuleMember -Variable中的項目，並非所有psm1的變數都會導入

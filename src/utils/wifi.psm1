@@ -1,4 +1,4 @@
-function GetWiFyPassword([string]$deviceName = "") {
+function Get-WiFiPassword([string]$deviceName = "") {
     if($deviceName -eq "") {
         echo "please input a name as follow:"
         netsh wlan show profiles # 顯示所有使用者資訊
@@ -9,6 +9,5 @@ function GetWiFyPassword([string]$deviceName = "") {
     netsh wlan show profile "$deviceName" key=clear
 }
 
-function GetWiFiPassword($deviceName = "") {
-    GetWiFyPassword($deviceName)
-}
+Set-Alias gWiPsw Get-WiFiPassword
+Set-Alias Get-WiFlyPassword Get-WiFiPassword

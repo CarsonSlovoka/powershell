@@ -13,14 +13,14 @@ NestedModules = @(
 # FunctionsToExport 一定要寫，除非你是Import-Module手動載入psm1，那麼可以靠psm1中使用Export-ModuleMember，但如果要仰賴psd1加入psm1的函數一定要寫FunctionsToExport
 FunctionsToExport = @(
     # wifi
-    'GetWiFyPassword',
-    'GetWiFiPassword',
+    'Get-WiFyPassword',
+    'Get-WiFiPassword',
 
     # init
     'MyHelp',
 
     # cmd
-    'SetByPass'
+    'Set-ByPass'
 )
 VariablesToExport = '*' # 還是要手動Import-Module才可以使用該變數
 # VariablesToExport = @( # 不需要個別導入，因為只有Export-ModuleMember -Variable中的項目，並非所有psm1的變數都會導入
@@ -32,7 +32,11 @@ AliasesToExport = @(
     'mh',
 
     # cmd
-    'byPass'
+    'byPass',
+
+    # wifi
+    'gWiPsw',
+    'Get-WiFlyPassword'
 )
 PrivateData = @{
     PSData = @{

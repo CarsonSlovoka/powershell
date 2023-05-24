@@ -15,6 +15,8 @@
     判斷字的成像是否有內容用
 .Parameter textRenderingHint
     如果要印出比較漂亮的字，要用 [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+
+    ClearType: 這種技術通常是把小字的圖放鑲嵌進去字型檔，使得在小字的呈現上效果會比較好。對於低解析度的顯示器會比較好看
 .Parameter savePicture
     如果設定會連帶畫出來的圖片一起保存，保存的位子和 outputFile 相同的資料夾
 .Example
@@ -22,7 +24,7 @@
 .Example
     Save-FontChars "C:\xxx\src.ttf" ".\temp\out.txt"
 .Example
-    Save-FontChars "C:\xxx\src.ttf" "C:\ooo\out.ttf" -endIdx 256 -fontSize 48 -bitmapSize 72 -textRenderingHint ([System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit) -savePicture -Verbose
+    Save-FontChars "C:\xxx\src.ttf" "C:\ooo\out.ttf" -endIdx 256 -fontSize 48 -bitmapSize 72 -textRenderingHint AntiAliasGridFit -savePicture -Verbose
 .Example
     Save-FontChars src.ttf out.txt -endIdx 0x20ffff
     Save-FontChars src.ttf out.txt -startIdx 0xffff -endIdx 0x01ffff
@@ -36,8 +38,8 @@
     Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 3 -bitmapSize 6 -savePicture # 很難看出來
 .Example
     # RenderHint
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -textRenderingHint ([System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit) -savePicture
     Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture
+    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit
 #>
 function Save-FontChars {
     param (
@@ -54,10 +56,31 @@ function Save-FontChars {
         [Parameter()]
         [int]$bitmapSize=6,
         [Parameter()]
-        [System.Drawing.Text.TextRenderingHint]$textRenderingHint = [System.Drawing.Text.TextRenderingHint]::SystemDefault,
+        [ValidateSet( # ValidateSet只能用常數，不能直接放[System.Drawing.Text.TextRenderingHint]::SystemDefault
+            "SystemDefault",
+            "SingleBitPerPixel",
+            "SingleBitPerPixelGridFit",
+            "AntiAlias",
+            "AntiAliasGridFit",
+            "ClearTypeGridFit"
+        )]
+        [string]$textRenderingHint = "SystemDefault",
+
         [Parameter()]
         [switch]$savePicture
     )
+
+    $textRenderingHintMap = @{
+        SystemDefault = [System.Drawing.Text.TextRenderingHint]::SystemDefault
+        SingleBitPerPixel = [System.Drawing.Text.TextRenderingHint]::SingleBitPerPixel
+        SingleBitPerPixelGridFit = [System.Drawing.Text.TextRenderingHint]::SingleBitPerPixelGridFit
+        AntiAlias = [System.Drawing.Text.TextRenderingHint]::AntiAlias
+        AntiAliasGridFit= [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+        ClearTypeGridFit = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+    }
+
+    [System.Drawing.Text.TextRenderingHint]$textRenderingHint = $textRenderingHintMap[$textRenderingHint]
+
     # 確保輸入輸出合法
     [System.IO.FileSystemInfo] $srcFile = Get-Item $srcFile -ErrorAction Stop
     $outputDir = $outputFile | Split-Path

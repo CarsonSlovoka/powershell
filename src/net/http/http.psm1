@@ -107,7 +107,7 @@ function Test-InvokeWebRequest {
     }
 
     $uri = "http://127.0.0.1:12345/{0}/" -f $apiPath
-    $srcFile = Get-Item (Join-Path $PSScriptRoot "../../../test/svg/keyboard.svg") -ErrorAction Stop
+    $srcFile = Get-Item (Join-Path $PSScriptRoot "../../../tests/testFiles/img/svg/keyboard.svg") -ErrorAction Stop
     $fileBytes = [System.IO.File]::ReadAllBytes($srcFile)
     $fileStr = [Text.Encoding]::UTF8.GetString($fileBytes)
     $boundary = [System.Guid]::NewGuid().ToString()

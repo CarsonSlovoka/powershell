@@ -40,6 +40,7 @@
     # RenderHint
     Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture
     Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit
+    Save-FontChars src.ttf out.txt -endIdx 200 -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit -Verbose
 #>
 function Save-FontChars {
     param (
@@ -112,7 +113,7 @@ function Save-FontChars {
     for ($i = $startIdx; $i -lt $endIdx; $i++) {
         if ($fontFamily.IsStyleAvailable([System.Drawing.FontStyle]::Regular)) {
             if ($i -gt 0xFFFF) {
-                $character = [char]::ConvertFromUtf32($i)
+                $character = [char]::ConvertFromUtf32($i) # 這個也不能處理超過0x10FFFF以及如果是surrogate pair( U+D800 到 U+DFFF)也會錯誤
             } else {
                 $character = [char] $i
             }

@@ -1,6 +1,6 @@
 <#
 .Synopsis
-    讀取字型檔案的每一個碼位，輸出其文字至指定的檔案
+    讀取字型檔案的每一個碼位，輸出其文字至指定的檔案，也可將該字的png保存起來
 .Description
     javascript: escape("風") 可以得知此碼位是: '%u98A8'
 .Parameter startIdx

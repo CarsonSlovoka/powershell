@@ -8,7 +8,8 @@ Copyright = 'Copyright (c) 2023 Carson, all right reserved'
 Description = 'os operator'
 NestedModules = @(
     'shortcut.psm1',
-    'process.psm1'
+    'process.psm1',
+    'file.psm1'
 )
 
 FunctionsToExport = @(
@@ -17,7 +18,10 @@ FunctionsToExport = @(
     'Set-Shortcut',
 
     # process
-    'Stop-ProcessByName'
+    'Stop-ProcessByName',
+
+    # file
+    'Remove-NotInListFiles'
 )
 CmdletsToExport = @()
 VariablesToExport = '*'

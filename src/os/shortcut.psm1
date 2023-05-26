@@ -42,8 +42,7 @@ function Set-Shortcut {
     }
 
     $WshShell = New-Object -ComObject WScript.Shell
-    # Shortcut.FullName (fullpath), 要存放的路徑;
-    $shortcut = $WshShell.CreateShortcut($filePath)
+    $shortcut = $WshShell.CreateShortcut($filePath) # Shortcut.FullName (fullpath)
     $shortcut.TargetPath = $targetPath
 
     $shortcut.Arguments = $arguments
@@ -54,7 +53,7 @@ function Set-Shortcut {
     # $VerbosePreference -eq "Continue";
 
     if ($openDirWhenFinish) {
-        start "$($fileDir.FullName)"
+        start "$($fileDir.FullName)";
     }
 
     return $shortcut

@@ -5,6 +5,7 @@
     捷徑要放在哪裡
 .Parameter targetPath
     目標程式, 也就是點擊此捷徑實際上會執行哪一隻程式, 圖標會自己設定成該應用程式的圖標. 如果該應用程式無法在系統路徑找到，需要給詳細的路徑位置
+    如果該應用程式名稱在系統路徑中存在，可以直給名稱即可，例如: 使用powershell.exe，實際會自己變成: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe;
 .Parameter arguments
     傳遞給目標程式的參數
     如果有需要用到「"」，可以善用跳脫字元「`」
@@ -41,8 +42,9 @@ function Set-Shortcut {
     }
 
     $WshShell = New-Object -ComObject WScript.Shell
-    $shortcut = $WshShell.CreateShortcut($filePath) # Shortcut.FullName (fullpath), 要存放的路徑;
-    $shortcut.TargetPath = $targetPath # "powershell.exe" # 執行的目標程式, 如果該應用程式名稱在系統路徑中存在，可以直給名稱即可，他會自己抓到。例如使用powershell.exe，實際會是: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe;
+    # Shortcut.FullName (fullpath), 要存放的路徑;
+    $shortcut = $WshShell.CreateShortcut($filePath)
+    $shortcut.TargetPath = $targetPath
 
     $shortcut.Arguments = $arguments
     $shortcut.WorkingDirectory = $workDir

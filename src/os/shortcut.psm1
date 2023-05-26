@@ -14,7 +14,7 @@
     Set-Shortcut "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\MyPowershell.lnk" "powershell.exe" "C:\ProgramData" "-msg=`"hello world`""
 .Example
     # 執行完之後會開啟捷徑所在目錄
-    Set-Shortcut "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\MyPowershell.lnk" "powershell.exe" "C:\ProgramData" -openDirWhenFinish 1
+    Set-Shortcut "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\MyPowershell.lnk" "powershell.exe" "C:\ProgramData" -openDirWhenFinish 1;
 #>
 function Set-Shortcut {
     param (
@@ -35,7 +35,7 @@ function Set-Shortcut {
     try {
         [System.IO.DirectoryInfo] $fileDir = Get-Item $fileDir
     } catch {
-        echo "[Error] $_.Exception.Message"
+        echo "[Error] $($_.Exception.Message);"
         Write-Error "請確認$filePath目錄存在;"
         return
     }
@@ -49,7 +49,7 @@ function Set-Shortcut {
     $shortcut.Save() # 存檔後才會真的產生捷徑;
 
     # Write-Verbose $shortcut # 這個打印的結果不好;
-    # if ($VerbosePreference -eq "Continue") { $shortcut } # 不論結果如何，一律都傳回此物件;
+    # $VerbosePreference -eq "Continue";
 
     if ($openDirWhenFinish) {
         start "$($fileDir.FullName)"

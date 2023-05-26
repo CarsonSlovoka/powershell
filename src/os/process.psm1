@@ -5,7 +5,7 @@ function Stop-ProcessByName {
         [string]$name
     )
     # $process = Get-process -Name $name -ErrorAction SilentlyContinue
-    $process = Get-process -Name $name -ErrorAction Stop
+    $process = Get-Process -Name $name -ErrorAction Stop
 
     $process | ForEach-Object {
         if ($PSCmdlet.ShouldProcess("Name: $($_.Name) PID: $($_.ID)", "Stop-Process")) {

@@ -49,11 +49,11 @@ function Set-Shortcut {
     $shortcut.Save() # 存檔後才會真的產生捷徑
 
     # Write-Verbose $shortcut # 這個打印的結果不好
-    if ($VerbosePreference -eq "Continue") {
-        $shortcut
-    }
+    # if ($VerbosePreference -eq "Continue") { $shortcut } # 不論結果如何，一律都傳回此物件
 
     if ($openDirWhenFinish) {
         start "$($fileDir.FullName)"
     }
+
+    return $shortcut
 }

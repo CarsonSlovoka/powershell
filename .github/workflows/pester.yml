@@ -1,0 +1,27 @@
+name: Pester Tests
+on:
+  push:
+    branches:
+      - master
+      - dev
+jobs:
+  Test-DesktopEdition:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Pester tests on powershell
+        run: |
+          $PSVersionTable.PSVersion
+          $pesterConfiguration = Get-Content config.pester.ps1 -Raw
+          $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
+          Invoke-Pester -Configuration $config
+        shell: powershell
+        working-directory: ./test
+      - name: Run Pester tests on pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          $pesterConfiguration = Get-Content config.pester.ps1 -Raw
+          $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
+          Invoke-Pester -Configuration $config
+        shell: pwsh
+        working-directory: ./test

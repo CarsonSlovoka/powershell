@@ -1,10 +1,27 @@
-<#
-.Synopsis
-    檢查當前您是否具備管理員權限
-.Output
-    true: isAdmin
-#>
 function Test-IsAdministrator {
+    <#
+    .SYNOPSIS
+        檢查當前您是否具備管理員權限
+    .EXAMPLE
+        ```powershell
+        $r = Test-IsAdministrator
+        if ($r.Err -eq $null) {
+            $isAdmin = $r.Result
+            Write-Output $isAdmin
+        } else {
+            Write-Error $r.Err
+        }
+        ```
+    .OUTPUTS
+        @{
+            Result = $null
+            Err = $null
+        }
+    #>
+    $o = @{
+        Result = $null
+        Err = $null
+    }
     try {
     	# 來取得當前的使用者身分;
     	$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -16,11 +33,13 @@ function Test-IsAdministrator {
     	$isAdministrator = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
     	if ($isAdministrator) {
-    		Write-Output $true
+    		$o.Result = $true
     	} else {
-    		Write-Output $false
+    	    $o.Result = $false
     	}
     } catch {
-    	Write-Error "[Error] $($_.Exception.Message)"
+    	# Write-Error "[Error] $($_.Exception.Message)"
+    	$o.Err = $_.Exception.Message
     }
+    return $o
 }

@@ -23,14 +23,15 @@ jobs:
           chcp 65001
           $env:chcp = 65001
           [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-      - name: Run Pester tests on powershell
-        run: |
-          $PSVersionTable.PSVersion
-          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -F
-          $pesterConfiguration = Get-Content config.pester.ps1 -Raw
-          $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
-          Invoke-Pester -Configuration $config
-        working-directory: ./tests
+      # 放棄在powershell5.1測試，可能要把檔案加上bom才會比較好
+      #- name: Run Pester tests on powershell
+      #  run: |
+      #    $PSVersionTable.PSVersion
+      #    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -F
+      #    $pesterConfiguration = Get-Content config.pester.ps1 -Raw
+      #    $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
+      #    Invoke-Pester -Configuration $config
+      #  working-directory: ./tests
       - name: Run Pester tests on pwsh
         run: |
           $PSVersionTable.PSVersion

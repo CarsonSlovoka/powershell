@@ -36,20 +36,20 @@ function Set-Shortcut {
         [System.IO.DirectoryInfo] $fileDir = Get-Item $fileDir
     } catch {
         echo "[Error] $_.Exception.Message"
-        Write-Error "請確認$filePath目錄存在"
+        Write-Error "請確認$filePath目錄存在;"
         return
     }
 
     $WshShell = New-Object -ComObject WScript.Shell
-    $shortcut = $WshShell.CreateShortcut($filePath) # Shortcut.FullName (fullpath), 要存放的路徑
-    $shortcut.TargetPath = $targetPath # "powershell.exe" # 執行的目標程式, 如果該應用程式名稱在系統路徑中存在，可以直給名稱即可，他會自己抓到。例如使用powershell.exe，實際會是: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    $shortcut = $WshShell.CreateShortcut($filePath) # Shortcut.FullName (fullpath), 要存放的路徑;
+    $shortcut.TargetPath = $targetPath # "powershell.exe" # 執行的目標程式, 如果該應用程式名稱在系統路徑中存在，可以直給名稱即可，他會自己抓到。例如使用powershell.exe，實際會是: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe;
 
     $shortcut.Arguments = $arguments
     $shortcut.WorkingDirectory = $workDir
-    $shortcut.Save() # 存檔後才會真的產生捷徑
+    $shortcut.Save() # 存檔後才會真的產生捷徑;
 
-    # Write-Verbose $shortcut # 這個打印的結果不好
-    # if ($VerbosePreference -eq "Continue") { $shortcut } # 不論結果如何，一律都傳回此物件
+    # Write-Verbose $shortcut # 這個打印的結果不好;
+    # if ($VerbosePreference -eq "Continue") { $shortcut } # 不論結果如何，一律都傳回此物件;
 
     if ($openDirWhenFinish) {
         start "$($fileDir.FullName)"

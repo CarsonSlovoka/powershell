@@ -18,15 +18,14 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module Microsoft.PowerShell.SecretManagement
           Import-Module Pester -MinimumVersion 5.4
-      - name: Set PowerShell script encoding
-        run: |
-          chcp 65001
-          $env:chcp = 65001
-          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
       # 放棄在powershell5.1測試，可能要把檔案加上bom才會比較好
       #- name: Run Pester tests on powershell
       #  run: |
       #    $PSVersionTable.PSVersion
+      #    chcp 65001
+      #    $env:chcp = 65001
+      #    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
       #    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -F
       #    $pesterConfiguration = Get-Content config.pester.ps1 -Raw
       #    $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
@@ -40,3 +39,11 @@ jobs:
           Invoke-Pester -Configuration $config
         shell: pwsh
         working-directory: ./tests
+      - name: Upload coverage file
+        # https://github.com/marketplace/actions/upload-a-build-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-artifact # 輸出名稱
+          path: |
+            ./tests/Pester-Coverage.xml
+            ./tests/Pester-Test.xml

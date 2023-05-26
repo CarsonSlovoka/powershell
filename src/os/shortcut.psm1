@@ -37,7 +37,7 @@ function Set-Shortcut {
         [System.IO.DirectoryInfo] $fileDir = Get-Item $fileDir
     } catch {
         echo "[Error] $($_.Exception.Message);"
-        Write-Error "請確認$filePath目錄存在;"
+        Write-Error "Parent path not found: $filePath"
         return
     }
 
@@ -47,9 +47,9 @@ function Set-Shortcut {
 
     $shortcut.Arguments = $arguments
     $shortcut.WorkingDirectory = $workDir
-    $shortcut.Save() # 存檔後才會真的產生捷徑;
+    $shortcut.Save() # The shortcut is only created after saving.
 
-    # Write-Verbose $shortcut # 這個打印的結果不好;
+    # Write-Verbose $shortcut
     # $VerbosePreference -eq "Continue";
 
     if ($openDirWhenFinish) {

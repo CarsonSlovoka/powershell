@@ -9,14 +9,22 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install Pester
+        # Install-Module -Name Pester -Force -SkipPublisherCheck
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Microsoft.PowerShell.SecretManagement
+          Import-Module Pester -MinimumVersion 5.4
+        shell: powershell
       - name: Run Pester tests on powershell
         run: |
           $PSVersionTable.PSVersion
+          Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -F
           $pesterConfiguration = Get-Content config.pester.ps1 -Raw
           $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
           Invoke-Pester -Configuration $config
         shell: powershell
-        working-directory: ./test
+        working-directory: ./tests
       - name: Run Pester tests on pwsh
         run: |
           $PSVersionTable.PSVersion
@@ -24,4 +32,4 @@ jobs:
           $config = New-PesterConfiguration -Hashtable ($pesterConfiguration | Invoke-Expression)
           Invoke-Pester -Configuration $config
         shell: pwsh
-        working-directory: ./test
+        working-directory: ./tests

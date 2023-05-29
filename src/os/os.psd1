@@ -21,7 +21,8 @@ FunctionsToExport = @(
     'Stop-ProcessByName',
 
     # file
-    'Remove-NotInListFiles'
+    'Remove-NotInListFiles',
+    'Rename-WithSerialNumber'
 )
 CmdletsToExport = @()
 VariablesToExport = '*'

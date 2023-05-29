@@ -1,3 +1,11 @@
+$ENCODING = ""
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    $ENCODING = "utf8NoBOM"
+} else {
+    $ENCODING = "utf8"
+}
+
+
 <#
 .Description
     在工作路徑中，只要檔案名稱不存在於lst之中，就會刪除。
@@ -41,7 +49,7 @@ function Remove-NotInListFiles {
         [string]$filter = "*.*"
     )
     # 從src.lst中查詢哪些檔案名稱需被留下;
-    $srcContent = Get-Content $srcLst -Encoding UTF8
+    $srcContent = Get-Content $srcLst -Encoding $ENCODING
     if ($srcContent -eq $null) {
         Write-Error "srcLst.content is null."
         return
@@ -79,4 +87,110 @@ function Remove-NotInListFiles {
             }
         }
     }
+}
+
+function Rename-WithSerialNumber {
+    <#
+    .Description
+        從工作目錄中挑選出指定副檔名的檔案，將這些檔案依照流水號的方式重新命名，
+
+        完成之後可以在輸出檔案中查看到原始的檔案名稱與流水號檔名的配對，已得知原始的檔案名稱匹配與目前哪一個檔案
+    .Parameter filter
+        例如: *.png
+        此為Get-ChildItem -Filter會用到的項目
+    .Parameter outputFile
+        保存舊檔名與新檔名的配對
+        csv format
+    .Outputs
+        @{
+           [PSObject]Datas = {
+             Old = $f.FullName
+             New = $newName
+            }
+           Err = $null
+        }
+    .Example
+        $o = Rename-WithSerialNumber -wkDir img -filter *.png -WhatIf
+        $o.Datas
+    .Example
+        $o = Rename-WithSerialNumber -wkDir img -filter *.png -outputFile "result.csv" -recurse
+    .Example
+        $o = Rename-WithSerialNumber img *.png
+        $o.Datas
+    #>
+
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string]$wkDir,
+        [Parameter(Mandatory)]
+        [string]$filter,
+        [Parameter()]
+        [string]$outputFile = "",
+        [Parameter()]
+        [switch]$recurse
+    )
+
+    $o = @{
+       Datas = @() # System.Array
+       Err = $null
+    }
+
+    [System.Object[]]$allFiles = @()
+    try {
+        if ($recurse) {
+            $allFiles = Get-ChildItem -Path $wkDir -Filter $filter -Recurse -ErrorAction Stop
+        } else {
+            $allFiles = Get-ChildItem -Path $wkDir -Filter $filter -ErrorAction Stop
+        }
+
+        # $allFiles = $allFiles | Sort-Object -Property Name # 排序，使的測試的輸出結果可以穩定; 沒用在powershell5和7的排法會有不同;
+        $allFiles = $allFiles | Sort-Object -Property CreationTime
+    } catch {
+        $o.Err = $_.Exception.Message
+        return $o
+    }
+
+    for ($i = 0; $i -lt $allFiles.Length; $i++) {
+        [System.IO.FileSystemInfo]$f = $allFiles[$i]
+        if ($f.PSIsContainer) { # directory
+            continue
+        }
+
+        [string]$basename = ($i + 1)
+
+        # 防止新檔名已經存在的狀況發生;
+        while(1) {
+            $newName = "{0}{1}" -f $basename, $f.Extension
+            if (Test-Path (Join-Path $f.Directory.FullName $newName)) {
+                $basename += "_copy"
+            } else {
+                break
+            }
+        }
+
+        $o.Datas += [PSObject]@{
+            Old = $f.FullName
+            New = $newName
+        }
+
+        Rename-Item $f.FullName $newName
+    }
+
+    if (!$WhatIfPreference -and !($outputFile -eq "")) {
+        try {
+            Out-File $outputFile -Encoding $ENCODING -ErrorAction Stop # 創建檔案，清空內容;
+        } catch {
+            $o.Err = $_.Exception.Message
+            return $o
+        }
+
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            $o.Datas | ConvertTo-Csv -NoTypeInformation | Out-File $outputFile -Encoding $ENCODING
+        } else {
+            $o.Datas | Out-File $outputFile -Encoding $ENCODING # 這種輸出方式其實有問題，因為$o.Datas是直接輸出，類似在console視窗所看到的樣子，所以如果太長，文字會用...來取代。;
+        }
+    }
+
+    return $o
 }

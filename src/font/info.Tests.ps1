@@ -25,7 +25,11 @@ Describe "[font.info.psm1]" {
 
     It "Calls Get-InstallGlyphTypeface" {
         $glyphTypefaceMap = Get-InstallGlyphTypeface -location CurrentUser
-        $glyphTypefaceMap | Should -BeNullOrEmpty # github action預設沒有裝字，所以會是Null;
+        if ((Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts') -eq $null) {
+            $glyphTypefaceMap | Should -BeNullOrEmpty # github action預設沒有裝字，所以會是Null;
+        } else {
+            $glyphTypefaceMap | Should -Not -BeNullOrEmpty
+        }
         $glyphTypefaceMap = Get-InstallGlyphTypeface -location LocalMachine
         $glyphTypefaceMap | Should -Not -BeNullOrEmpty # 有預設字形Arial，所以非空;
         $glyphTypefaceMap = Get-InstallGlyphTypeface

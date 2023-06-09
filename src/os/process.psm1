@@ -1,17 +1,20 @@
 function Stop-ProcessByName {
+    <#
+    .Description
+        強制關閉所有符合的名稱項目其程序
+    .Example
+        Stop-ProcessByName excel
+    #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory)]
         [string]$name
     )
     # $process = Get-process -Name $name -ErrorAction SilentlyContinue
-    $process = Get-Process -Name $name -ErrorAction Stop
-
-    $process | ForEach-Object {
-        if ($PSCmdlet.ShouldProcess("Name: $($_.Name) PID: $($_.ID)", "Stop-Process")) {
-            Stop-Process -Id $_.Id -F
-        } else {
-            Stop-Process -Id $_.Id -WhatIf
-        }
+    $process = Get-Process -Name $name -ErrorAction SilentlyContinue
+    if ($process -eq $null) {
+        Write-Verbose "$name not found"
+        return
     }
+    $process | ForEach-Object {Stop-Process -Id $_.Id}
 }

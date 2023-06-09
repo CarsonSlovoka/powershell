@@ -1,4 +1,4 @@
-Describe "[font.psd1]" {
+Describe "[font.psd1.font.psm1]" {
     BeforeAll {
         Import-Module (Join-Path $PSScriptRoot 'font.psd1')
         $wkDir = Join-Path $PSScriptRoot "temp"
@@ -16,7 +16,7 @@ Describe "[font.psd1]" {
             return
         }
         # 目標為A~Z共26個字母
-        Save-FontChars (Join-Path $env:SystemRoot fonts/Arial.ttf) $outputFilePath -startIdx 65 -endIdx 0x5B -fontSize 48 -bitmapSize 72
+        Save-FontChars $fontPath $outputFilePath -startIdx 65 -endIdx 0x5B -fontSize 48 -bitmapSize 72
         [Object[]]$datas = Get-Content $outputFilePath
         $datas[0].Length | Should -Be 10 # 每列10個字
         $datas.Length | Should -Be 3 # 26個字母所以會有3列
@@ -27,7 +27,7 @@ Describe "[font.psd1]" {
         if (!(Test-Path $fontPath)) {
             return
         }
-        Save-FontChars (Join-Path $env:SystemRoot fonts/Arial.ttf) $outputFilePath -startIdx 0x1F44C -endIdx 0x1F44E -fontSize 48 -bitmapSize 72 -savePicture
+        Save-FontChars $fontPath $outputFilePath -startIdx 0x1F44C -endIdx 0x1F44E -fontSize 48 -bitmapSize 72 -savePicture
         # 0x1F44C 👌
         # 0x1F44D 👍
         [Object[]]$datas = Get-Content $outputFilePath

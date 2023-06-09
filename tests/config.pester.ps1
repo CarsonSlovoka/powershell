@@ -3,8 +3,11 @@
 $runPath = @(
     "..\src\auth",
     "..\src\calendar",
-    "..\src\os"
+    "..\src\os",
+    "..\src\font\info.Tests.ps1"
 )
+
+$quicklyMode = $false
 
 if ($PSVersionTable.PSVersion.Major -ge 6) {
     $runPath += @(
@@ -28,12 +31,12 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
 		OutputEncoding = 'UTF8'
 		OutputPath = ".\Pester-Coverage.xml"
 		CoveragePercentTarget = 75 # default 75%
-		Enabled = $true
+		Enabled = !$quicklyMode
 	}
 	TestResult = @{
 		OutputPath = ".\Pester-Test.xml"
 		OutputFormat = "NUnitXml"
 		OutputEncoding = 'UTF8'
-		Enabled = $true
+		Enabled = !$quicklyMode
 	}
 }

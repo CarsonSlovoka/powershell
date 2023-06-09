@@ -1,54 +1,54 @@
-<#
-.Synopsis
-    讀取字型檔案的每一個碼位，輸出其文字至指定的檔案(每10個字一列)，也可將該字的png保存起來
-.Description
-    javascript: escape("風") 可以得知此碼位是: '%u98A8'
-.Parameter fontPath
-    字型檔案路徑
-.Parameter outputFile
-    輸出的檔案路徑，每10個字一列寫到檔案之中
-.Parameter startIdx
-    開始的碼位
-.Parameter endIdx
-    結束的碼位
-    預設值為0x11FFFF，正常來說不應該超過此範圍
-.Parameter fontSize
-    判斷字的成像是否有內容用
-    如果設定太小，畫出來會只有一個點
-.Parameter bitmapSize
-    判斷字的成像是否有內容用
-.Parameter textRenderingHint
-    如果要印出比較漂亮的字，要用 [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
-
-    ClearType: 這種技術通常是把小字的圖放鑲嵌進去字型檔，使得在小字的呈現上效果會比較好。對於低解析度的顯示器會比較好看
-.Parameter savePicture
-    如果設定會連帶畫出來的圖片一起保存，保存的位子和 outputFile 相同的資料夾
-.Example
-    Save-FontChars src.ttf out.txt
-.Example
-    Save-FontChars "C:\xxx\src.ttf" ".\temp\out.txt"
-.Example
-    Save-FontChars "C:\xxx\src.ttf" "C:\ooo\out.ttf" -endIdx 256 -fontSize 48 -bitmapSize 72 -textRenderingHint AntiAliasGridFit -savePicture -Verbose
-.Example
-    Save-FontChars src.ttf out.txt -endIdx 0x20ffff
-    Save-FontChars src.ttf out.txt -startIdx 0xffff -endIdx 0x01ffff
-.Example
-    Save-FontChars src.ttf out.txt -startIdx 65 -endIdx 128
-    Save-FontChars src.ttf out.txt -startIdx 0 -endIdx 65
-.Example
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 24 -bitmapSize 48 -savePicture
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 18 -bitmapSize 32 -savePicture # 很輕鬆看出來
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 6 -bitmapSize 9 -savePicture # 免強看出來
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 3 -bitmapSize 6 -savePicture # 很難看出來
-.Example
-    # RenderHint
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture
-    Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit
-    Save-FontChars src.ttf out.txt -endIdx 200 -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit -Verbose
-.Example
-    Save-FontChars (Join-Path $env:SystemRoot fonts/Arial.ttf) out.txt -startIdx 0x3579 -endIdx 0x3590 -fontSize 48 -bitmapSize 72 -savePicture
-#>
 function Save-FontChars {
+    <#
+    .Synopsis
+        讀取字型檔案的每一個碼位，輸出其文字至指定的檔案(每10個字一列)，也可將該字的png保存起來
+    .Description
+        javascript: escape("風") 可以得知此碼位是: '%u98A8'
+    .Parameter fontPath
+        字型檔案路徑
+    .Parameter outputFile
+        輸出的檔案路徑，每10個字一列寫到檔案之中
+    .Parameter startIdx
+        開始的碼位
+    .Parameter endIdx
+        結束的碼位
+        預設值為0x11FFFF，正常來說不應該超過此範圍
+    .Parameter fontSize
+        判斷字的成像是否有內容用
+        如果設定太小，畫出來會只有一個點
+    .Parameter bitmapSize
+        判斷字的成像是否有內容用
+    .Parameter textRenderingHint
+        如果要印出比較漂亮的字，要用 [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+
+        ClearType: 這種技術通常是把小字的圖放鑲嵌進去字型檔，使得在小字的呈現上效果會比較好。對於低解析度的顯示器會比較好看
+    .Parameter savePicture
+        如果設定會連帶畫出來的圖片一起保存，保存的位子和 outputFile 相同的資料夾
+    .Example
+        Save-FontChars src.ttf out.txt
+    .Example
+        Save-FontChars "C:\xxx\src.ttf" ".\temp\out.txt"
+    .Example
+        Save-FontChars "C:\xxx\src.ttf" "C:\ooo\out.ttf" -endIdx 256 -fontSize 48 -bitmapSize 72 -textRenderingHint AntiAliasGridFit -savePicture -Verbose
+    .Example
+        Save-FontChars src.ttf out.txt -endIdx 0x20ffff
+        Save-FontChars src.ttf out.txt -startIdx 0xffff -endIdx 0x01ffff
+    .Example
+        Save-FontChars src.ttf out.txt -startIdx 65 -endIdx 128
+        Save-FontChars src.ttf out.txt -startIdx 0 -endIdx 65
+    .Example
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 24 -bitmapSize 48 -savePicture
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 18 -bitmapSize 32 -savePicture # 很輕鬆看出來
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 6 -bitmapSize 9 -savePicture # 免強看出來
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 3 -bitmapSize 6 -savePicture # 很難看出來
+    .Example
+        # RenderHint
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture
+        Save-FontChars src.ttf out.txt -startIdx 0x98a8 -endIdx 0x98aa -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit
+        Save-FontChars src.ttf out.txt -endIdx 200 -fontSize 48 -bitmapSize 72 -savePicture -textRenderingHint AntiAliasGridFit -Verbose
+    .Example
+        Save-FontChars (Join-Path $env:SystemRoot fonts/Arial.ttf) out.txt -startIdx 0x3579 -endIdx 0x3590 -fontSize 48 -bitmapSize 72 -savePicture
+    #>
     param (
         [Parameter(Mandatory)]
         [string]$fontPath,

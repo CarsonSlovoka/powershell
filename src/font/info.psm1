@@ -18,7 +18,7 @@ function Get-InstallGlyphTypeface {
         取得所有安裝(LocalMachine, CurrentUser)的所有GlyphTypeface資訊
     .Outputs
         ```
-        type: [hashtable]
+        type: [hashtable] or $null
         example:
         foo.ttf     System.Windows.Media.GlyphTypeface
         bar.TTF     System.Windows.Media.GlyphTypeface
@@ -71,6 +71,9 @@ function Get-InstallGlyphTypeface {
     $glyphTypefaceMap = @{}
     foreach ($regPath in $regPaths) {
         $fontList = Get-ItemProperty $regPath
+        if ($fontList -eq $null) {
+            continue
+        }
         foreach ($_ in ($fontList | Get-Member -MemberType NoteProperty)) {
             $propertyName = $_.Name
             if (!($propertyName.Contains("TrueType"))) {
@@ -93,6 +96,9 @@ function Get-InstallGlyphTypeface {
             $name = (Get-Item ($glyphTypeface.FontUri.LocalPath)).Name # xxx.ttf
             $glyphTypefaceMap[$name] = $glyphTypeface
         }
+    }
+    if ($glyphTypefaceMap.Count -eq 0) {
+        return $null
     }
     return $glyphTypefaceMap
 }

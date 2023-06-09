@@ -8,7 +8,8 @@ NestedModules = @(
     'font.psm1'
 )
 FunctionsToExport = @(
-    'Save-FontChars'
+    'Save-FontChars',
+    'Export-GlyphToExcel'
 )
 AliasesToExport = @()
 VariablesToExport = '*'

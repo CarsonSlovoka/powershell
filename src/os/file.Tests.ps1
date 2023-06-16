@@ -231,3 +231,97 @@ Describe "Rename-WithSerialNumber" {
         Remove-Item $outputFile -ErrorAction SilentlyContinue # 避免測試案例在最後一個而沒有把測試檔案刪除的狀況發生;
     }
 }
+
+Describe "Rename-FileByList" {
+    $wkDir = Join-Path $PSScriptRoot "temp"
+    $testFilesDir = Join-Path $wkDir "testFiles"
+    $srcLst = Join-Path $wkDir "src.lst"
+
+    BeforeAll {
+        $LF = "`n"
+        Import-Module (Join-Path $PSScriptRoot 'os.psd1')
+        $wkDir = Join-Path $PSScriptRoot "temp"
+
+        $srcLst = Join-Path $wkDir "src.lst"
+        $testFilesDir = Join-Path $wkDir "testFiles" # 模擬要被重新命名的文件
+
+        # 建立工作目錄
+        # temp
+        New-Item $wkDir -ItemType Directory -ErrorAction SilentlyContinue
+        # temp/testFiles
+        New-Item $testFilesDir -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
+    BeforeEach {
+        Out-File $srcLst -Encoding utf8NoBOM # 創建或者清除src.lst的內容
+
+        # 清除所有被模擬的文件，避免因為測試案例的殘留
+        Remove-Item $testFilesDir -Recurse
+
+        # 清除之後重建，此時此目錄應為空
+        New-Item $testFilesDir -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
+    It "Rename-FileByList -srcLst $srcLst -wkDir $testFilesDir -ext .png" {
+        # 建立lst檔案
+        $srcContent = @(
+            'old-01 new-01',
+            'old-02 new-02'
+        ) -Join $LF
+        Set-Content $srcLst -Value $srcContent -Force -Encoding utf8
+
+        # 創建測試檔案
+        Out-File (Join-Path $testFilesDir "old-01.png") -Encoding utf8NoBOM
+        Out-File (Join-Path $testFilesDir "old-02.png") -Encoding utf8NoBOM
+
+        $o = Rename-FileByList $srcLst -wkDir $testFilesDir -ext ".png"
+        $o.Err | Should -BeNullOrEmpty
+        $o.Count | Should -Be 2
+
+        @(
+            (Test-Path (Join-Path $testFilesDir "old-01.png")),
+            (Test-Path (Join-Path $testFilesDir "old-02.png")),
+            (Test-Path (Join-Path $testFilesDir "new-01.png")),
+            (Test-Path (Join-Path $testFilesDir "new-02.png"))
+        ) | Should -Be @(
+            $false,
+            $false,
+            $true,
+            $true
+        )
+    }
+
+    It "Rename-FileByList -srcLst $srcLst -sep ," {
+        # srcLst寫完整路徑的測試
+        $srcContent = @(
+            "$(Join-Path $testFilesDir old-01.png),$(Join-Path $testFilesDir new-01.bmp)",
+            "$(Join-Path $testFilesDir old-02.png),$(Join-Path $testFilesDir new-02.svg)"
+        ) -Join $LF
+        Set-Content $srcLst -Value $srcContent -Force -Encoding utf8
+
+        # 創建測試檔案
+        Out-File (Join-Path $testFilesDir "old-01.png")
+        Out-File (Join-Path $testFilesDir "old-02.png")
+
+        # $o = Rename-FileByList $srcLst -sep "|" # `|` 會有另外的解讀，所以不行用
+        $o = Rename-FileByList $srcLst -sep ","
+        $o.Err | Should -BeNullOrEmpty
+        $o.Count | Should -Be 2
+
+        @(
+            (Test-Path (Join-Path $testFilesDir "old-01.png")),
+            (Test-Path (Join-Path $testFilesDir "old-02.png")),
+            (Test-Path (Join-Path $testFilesDir "new-01.bmp")),
+            (Test-Path (Join-Path $testFilesDir "new-02.svg"))
+        ) | Should -Be @(
+            $false,
+            $false,
+            $true,
+            $true
+        )
+    }
+
+    AfterAll {
+        Remove-Item $wkDir -Recurse
+    }
+}

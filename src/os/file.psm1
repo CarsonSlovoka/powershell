@@ -194,3 +194,104 @@ function Rename-WithSerialNumber {
 
     return $o
 }
+
+function Rename-FileByList {
+<#
+    .Description
+        依據清單來將指定的工作目錄中的檔案來重新命名
+    .Parameter srcLst
+        重新命名清單描述檔的路徑
+
+        此檔案內容範例如下:
+        ```
+        old-001.png new-001.png
+        ...
+        old-00N new-00N
+        ```
+
+        ```yaml
+        C:\img\old-01.png|C:\img\new-01.bmp # 這樣寫可以，但一般來說新檔案只需要寫新的檔名即可，因為重新命名不允許變更目錄位置，不然會報錯
+        C:\img\old-02.png|new-01.bmp
+        ```
+    .Parameter wkDir
+        也就是srcLst項目中的的檔案資料夾位置，這是為了簡化srcLst的內容所設計
+
+        如果不給，那麼srcLst的項目就要寫完整的路徑
+    .Parameter ext
+        ```
+        例如: `.png`
+        如果您的清單描述不是那麼完整，可以利用此參數來輔助
+        ```
+    .Parameter sep
+        ```
+        srcLst之中的分隔符號，預設為空白
+
+        > ❗ 分隔不好不可以用`|`
+        ```
+    .Outputs
+        $o = @{
+           Count = 0 # 有幾筆成功重新命名的數量
+           Err = $null
+        }
+    .Example
+        $o = Rename-FileByList $srcLst $wkDir -ext .png
+        $o = Rename-FileByList $srcLst $wkDir -ext .png -sep ","
+    .Example
+        # srcLst寫完整路徑
+        $o = Rename-FileByList $srcLst
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string]$srcLst,
+        [Parameter()]
+        [string]$wkDir = "",
+        [Parameter()]
+        [string]$ext = "",
+        [Parameter()]
+        [string]$sep = " "
+    )
+
+    $o = @{
+       Count = 0
+       Err = $null
+    }
+
+    if (!(Test-Path $srcLst)) {
+        $o.Err = "[PathNotExists Error] $srcLst"
+        return $o
+    }
+
+    # 逐行讀取檔案內容
+    Get-Content $srcLst | ForEach-Object {
+        $line = $_
+        $oldFileName, $newFileName = $line -split $sep
+        $oldFilePath = ""
+        $newFilePath = ""
+        if (!($wkDir -eq "")) {
+            $oldFilePath = Join-Path $wkDir "$oldFileName$($ext)"
+            $newFilePath = Join-Path $wkDir "$newFileName$($ext)"
+        } else {
+            $oldFilePath = $oldFileName
+            $newFilePath = $newFileName
+        }
+
+        # 檢查舊檔案是否存在
+        if (Test-Path $oldFilePath) {
+            # 重新命名檔案
+            try {
+                # Rename-Item只能重新命名，不能更改檔案的目錄位置
+                Rename-Item -Path $oldFilePath -NewName $newFilePath
+            } catch {
+                $o.Err = $_.Exception.Message
+                return
+            }
+            Write-Verbose "已將 $oldFileName 重新命名為 $newFileName"
+            $o.Count++
+        }
+        else {
+            Write-Verbose "找不到檔案: $oldFileName"
+        }
+    }
+    return $o
+}

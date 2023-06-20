@@ -20,3 +20,7 @@
   - 會安裝在: `%ProgramFiles%\PowerShell\7\pwsh.exe`
   - 查看powershell相關應用程式的位置: `gcm powershell, pwsh`
 2. 點擊[install.bat](install.bat)
+
+### Install by script
+
+你可以打開pwsh.exe直接將[install2.ps1](install2.ps1)的內容貼上也可以安裝

@@ -4,11 +4,28 @@ Describe "[font.psd1.font.psm1]" {
         $wkDir = Join-Path $PSScriptRoot "temp"
         New-Item $wkDir -ItemType Directory -ErrorAction SilentlyContinue
         $fontPath = Join-Path $env:SystemRoot fonts/Arial.ttf
+        $testFontPath = Join-Path $PSScriptRoot "testFiles/carson.ttf"
         $outputFilePath = Join-Path $wkDir out.txt
     }
 
     BeforeEach {
         Out-File $outputFilePath -Encoding utf8NoBOM # 利用創建檔案來清空文件內容
+    }
+
+    It "Calls Save-FontChars -autoIdx" {
+        Save-FontChars $testFontPath $outputFilePath -autoIdx -fontSize 18 -bitmapSize 32 -savePicture
+        [Object[]]$datas = Get-Content $outputFilePath
+        $datas.Length | Should -Be 1 # 只需要1列
+        $datas -Join "" | Should -Be "BD"
+
+        # 輸出的圖片應該要存在
+        @(
+            (Test-Path (Join-Path $wkDir "0042.png")),
+            (Test-Path (Join-Path $wkDir "0044.png"))
+        ) | Should -Be @(
+            $true,
+            $true
+        )
     }
 
     It "Calls Save-FontChars" {

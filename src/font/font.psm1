@@ -8,10 +8,14 @@ function Save-FontChars {
         字型檔案路徑
     .Parameter outputFile
         輸出的檔案路徑，每10個字一列寫到檔案之中
+    .Parameter autoIdx
+        當autoIdx開啟時，會使用GlyphMap的資料為主，並且忽略startIdx與endIdx
     .Parameter startIdx
         開始的碼位
+        你可以指定到GlyphMap沒有的碼位，此時呈現的圖片，會是使用其他系統字型替代出來的樣子，並非該字型檔本身所提供的glyph
     .Parameter endIdx
         結束的碼位
+        你可以指定到GlyphMap沒有的碼位，此時呈現的圖片，會是使用其他系統字型替代出來的樣子，並非該字型檔本身所提供的glyph
         預設值為0x11FFFF，正常來說不應該超過此範圍
     .Parameter fontSize
         判斷字的成像是否有內容用
@@ -25,9 +29,9 @@ function Save-FontChars {
     .Parameter savePicture
         如果設定會連帶畫出來的圖片一起保存，保存的位子和 outputFile 相同的資料夾
     .Example
-        Save-FontChars src.ttf out.txt
+        Save-FontChars src.ttf out.txt -autoIdx
     .Example
-        Save-FontChars "C:\xxx\src.ttf" ".\temp\out.txt"
+        Save-FontChars "C:\xxx\src.ttf" ".\temp\out.txt" -autoIdx
     .Example
         Save-FontChars "C:\xxx\src.ttf" "C:\ooo\out.ttf" -endIdx 256 -fontSize 48 -bitmapSize 72 -textRenderingHint AntiAliasGridFit -savePicture -Verbose
     .Example
@@ -54,6 +58,8 @@ function Save-FontChars {
         [string]$fontPath,
         [Parameter(Mandatory)]
         [string]$outputFile,
+        [Parameter()]
+        [switch]$autoIdx,
         [Parameter()]
         [int]$startIdx = 0,
         [Parameter()]
@@ -113,15 +119,13 @@ function Save-FontChars {
     $fontFamily = $fontCollection.Families[0]
     $font = New-Object System.Drawing.Font($fontFamily, $fontSize)
 
-    # 取得字型支援的所有字符碼位
-    # [System.Collections.Generic.List`1[System.Char]] $characterSet = New-Object System.Collections.Generic.List[char] # 這個沒辦法處理超過0xffff
-    $characterSet = @()
-    for ($i = $startIdx; $i -lt $endIdx; $i++) {
+    function get-CharacterSet($unicodeIdx) {
+        $char = ""
         if ($fontFamily.IsStyleAvailable([System.Drawing.FontStyle]::Regular)) {
-            if ($i -gt 0xFFFF) {
-                $character = [char]::ConvertFromUtf32($i) # 這個也不能處理超過0x10FFFF以及如果是surrogate pair( U+D800 到 U+DFFF)也會錯誤
+            if ($unicodeIdx -gt 0xFFFF) {
+                $character = [char]::ConvertFromUtf32($unicodeIdx) # 這個也不能處理超過0x10FFFF以及如果是surrogate pair( U+D800 到 U+DFFF)也會錯誤
             } else {
-                $character = [char] $i
+                $character = [char] $unicodeIdx
             }
             $bitmap = New-Object System.Drawing.Bitmap($bitmapSize, $bitmapSize)
             $graphics = [System.Drawing.Graphics]::FromImage($bitmap) # 取得graphics物件;
@@ -151,16 +155,38 @@ function Save-FontChars {
 
             if ($hasVisiblePixels) {
                 if ($savePicture.IsPresent) {
-                    $hex = ("{0:X}" -f $i).PadLeft(4, "0")
+                    $hex = ("{0:X}" -f $unicodeIdx).PadLeft(4, "0")
                     $bitmap.Save((Join-Path $outputDir.FullName "$hex.png"), [System.Drawing.Imaging.ImageFormat]::Png) # Bmp
                 }
-                # $characterSet.Add($character)
-                $characterSet += $character
+                $char = $character
             } else {
-                Write-Verbose "empty bitmap: $i"
+                Write-Verbose "empty bitmap: $unicodeIdx"
             }
             $graphics.Dispose()
             $bitmap.Dispose()
+        }
+        return $char
+    }
+
+    # 取得字型支援的所有字符碼位
+    # [System.Collections.Generic.List`1[System.Char]] $characterSet = New-Object System.Collections.Generic.List[char] # 這個沒辦法處理超過0xffff
+    $characterSet = @()
+    if ($autoIdx) {
+        Add-Type -AssemblyName PresentationCore
+        $glyphTypeface = New-Object -TypeName Windows.Media.GlyphTypeface -ArgumentList $fontPath.FullName # 可以給非絕對路徑，只是我們前面已經把$fontPath轉成FileSystemInfo，所以要再轉成字串才能用
+        $glyphTypeface.CharacterToGlyphMap | foreach {
+            # CharacterToGlyphMap是一個Array每一個元素為一個Key, Value的組合，其中Key指的是unicode的碼位, Value表示glyphIdx
+            $ch = get-CharacterSet $_.Key
+            if (!($ch -eq "")) {
+                $characterSet += $ch
+            }
+        }
+    } else {
+        for ($i = $startIdx; $i -lt $endIdx; $i++) {
+            $ch = get-CharacterSet $i
+            if (!($ch -eq "")) {
+                $characterSet += $ch
+            }
         }
     }
 

@@ -8,19 +8,23 @@ function Show-DateTime {
         Dialog的標題內容
     .Example
         Show-DateTime
+        ShowDT
     .Example
         Show-DateTime "現在時間"
+        ShowDT -Title "現在時間"
     #>
+    [alias('ShowDT')]
+    [CmdletBinding()]
     param (
         [Parameter()]
-        [string]$title="Current Time"
+        [alias('Title')][string]$titleText="Current Time"
     )
 
     # https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms?view=windowsdesktop-7.0
     Add-Type -AssemblyName System.Windows.Forms
 
     $form =  [System.Windows.Forms.Form]::new()
-    $form.Text = $title
+    $form.Text = $titleText
     $form.Size = [System.Drawing.Size]::new(300, 100)
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
 

@@ -10,7 +10,10 @@ FunctionsToExport = @(
     # datetime.psm1
     'Show-DateTime'
 )
-AliasesToExport = @()
+AliasesToExport = @(
+    # datetime.psm1
+    'ShowDT'
+)
 VariablesToExport = '*'
 CmdletsToExport = @()
 PrivateData = @{

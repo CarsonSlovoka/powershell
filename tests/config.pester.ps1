@@ -15,6 +15,13 @@ if ($PSVersionTable.PSVersion.Major -ge 6) {
     )
 }
 
+# $PSVersionTable.PSVersion.ToString().Substring(0, 3) -eq "6.2"
+if (($PSVersionTable.PSVersion.Major -ge 6) -and ($PSVersionTable.PSVersion.Minor -ge 2)) {
+    $runPath += @(
+        "..\src\encoding"
+    )
+}
+
 @{
 	Run = @{
 		# Path = @("..\src") # 只要有psd1都會納入，使用ExcludePath沒辦法排除，所以只能猜開寫

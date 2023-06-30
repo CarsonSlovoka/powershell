@@ -4,23 +4,33 @@
 
 ## Install
 
+有3種方法都可以使用本專案寫的腳本
+
+1. 自行加入系統變數
+2. 使用腳本來加入系統變數
+3. 使用腳本來安裝(Install by script)
+
+其中1, 2都需自行clone專案，再執行相應動作
+
+### 自行加入系統變數
+
 只要將本專案的src目錄告知給環境變數: `PSModulePath` 之後打開powershell即可開始使用，
 
 如果您想要使用UI加入可以透過SystemPropertiesProtection.exe來加入
 
 > start $env:SystemRoot\System32\SystemPropertiesProtection.exe # 可以快速開啟env的設定
 
-如果您想使用腳本來安裝，可以點擊[install.bat](install.bat) (需安裝`pwsh.exe`)
+### 使用腳本來加入系統變數
 
-因為powershell5.1預設不是使用UTF8，所以運行的時候，遇到腳本的中文可能會有問題，建議您安裝powershell7，取得`pwsh.exe`
+clone專案，之後點擊[install.bat](install.bat)即可 (需安裝[pwsh.exe](docs/pwsh.md#Install)，主要是避免編碼的問題)
 
-取得`pwsh.exe`和安裝:
 
-1. 開啟powershell，輸入指令: `winget install --id Microsoft.Powershell --source winget`
-  - 會安裝在: `%ProgramFiles%\PowerShell\7\pwsh.exe`
-  - 查看powershell相關應用程式的位置: `gcm powershell, pwsh`
-2. 點擊[install.bat](install.bat)
-
-### Install by script
+### 使用腳本來安裝(Install by script)
 
 你可以打開pwsh.exe直接將[install2.ps1](install2.ps1)的內容貼上也可以安裝
+
+## Usage
+
+所有的指令都寫在[src](src/)的目錄之中，您可以自行逛逛，
+
+大部分的指令都有寫上Help，也都有在裡頭寫Example，所以您都可以透過[Get-Help xxx -full](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/get-help?view=powershell-7.3)來查看用法

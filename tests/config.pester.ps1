@@ -4,7 +4,8 @@ $runPath = @(
     "..\src\auth",
     "..\src\calendar",
     "..\src\os",
-    "..\src\font\info.Tests.ps1"
+    "..\src\font\info.Tests.ps1",
+    "..\src\forms"
 )
 
 $quicklyMode = $false

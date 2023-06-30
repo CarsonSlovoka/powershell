@@ -8,7 +8,8 @@ NestedModules = @(
 )
 FunctionsToExport = @(
     # datetime.psm1
-    'Show-DateTime'
+    'Show-DateTime',
+    'Set-Countdown'
 )
 AliasesToExport = @(
     # datetime.psm1

@@ -5,7 +5,8 @@ $runPath = @(
     "..\src\calendar",
     "..\src\os",
     "..\src\font\info.Tests.ps1",
-    "..\src\forms"
+    "..\src\forms",
+    "..\src\w32\user32dll"
 )
 
 $quicklyMode = $false

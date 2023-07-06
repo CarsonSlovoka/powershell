@@ -5,6 +5,17 @@
     MessageBox "body message" "title" YesNo
 .Example
     MessageBox "body message" "title" YesNo  Question
+.Example
+    # 另解
+    ```
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.MessageBox]::Show('body', 'Title',
+        [Windows.Forms.MessageBoxButtons]::OK,
+        [Windows.Forms.MessageBoxIcon]::Information,
+        [Windows.Forms.MessageBoxDefaultButton]::Button1,
+        [Windows.Forms.MessageBoxOptions]::ServiceNotification
+    )
+    ```
 .Link
     https://learn.microsoft.com/zh-tw/dotnet/api/system.windows.forms.messagebox?view=windowsdesktop-7.0
 #>

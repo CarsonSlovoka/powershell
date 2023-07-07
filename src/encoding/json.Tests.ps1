@@ -4,7 +4,7 @@ Describe "json.psm1" {
     }
 
     It "Calls Convert-Json5ToJson" {
-        Wait-Debugger
+        # Wait-Debugger
         # 純轉換
         $json5Path = Join-Path $PSScriptRoot 'testFiles/test.json5'
         $o = Convert-Json5ToJson $json5Path

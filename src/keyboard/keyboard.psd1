@@ -8,8 +8,9 @@
     )
     FunctionsToExport = @(
         # clipboard.psm1
-        'Save-ClipboardImage'
-        'Show-ClipboardHistory'
+        'Save-ClipboardImage',
+        'Show-ClipboardHistory',
+        'Watch-ClipboardImage'
     )
     AliasesToExport = @(
     )

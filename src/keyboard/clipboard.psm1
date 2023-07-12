@@ -65,7 +65,6 @@ function Save-ClipboardImage {
     }
 }
 
-
 function Show-ClipboardHistory {
     <#
         .SYNOPSIS
@@ -333,3 +332,98 @@ function Show-ClipboardHistory {
     }).BeginInvoke()
 }
 
+function Watch-ClipboardImage {
+    <#
+    .Synopsis
+        監看剪貼簿的內容，如果該內容屬於圖片，就會保存到指定的目錄之中
+
+        檔名使用md5來計算，避免重複的檔案不斷被保存
+    .Parameter outDir
+        圖片要存放的目錄
+    .Parameter interval
+        多久(毫秒)查看一次剪貼簿
+    .Example
+        Watch-ClipboardImage
+    .Example
+        Watch-ClipboardImage -outDir "C:\temp" -interval 2000
+    .Link
+        https://stackoverflow.com/q/39458086/9935654
+    .Link
+        # 此監聽方法不適用於powershell7
+        https://stackoverflow.com/a/54237188/9935654
+    #>
+    param (
+        [Parameter()]
+        [ValidateScript({
+            # 確保至少是資料夾或者檔案;
+            if(-Not ($_ | Test-Path) ){
+                throw "File or folder does not exist"
+            }
+            if($_ | Test-Path -PathType Leaf) { # 如果有枝葉，就是檔案，我們只允許目錄;
+                throw "The Path argument must be a folder, not the file."
+            }
+            return $true
+        })][string]$outDir = (Get-Item .).FullName,
+        [Parameter()]
+        [int]$interval = 2000
+    )
+
+    Add-Type -AssemblyName System.Windows.Forms
+
+    $form = New-Object Windows.Forms.Form
+    $form.Add_KeyDown({
+        if($_.KeyCode -eq "Escape") {
+            $form.Close() # add_FormClosing裡面的程序也會被觸發;
+        }
+    })
+
+    # TODO: 可以考慮註冊鉤子，這樣就不需要倚靠timer
+    $timer = [System.Windows.Forms.Timer]::new()
+    $timer.Interval = $interval
+    $Script:PreviousImage = "" # event內的變數作用域受限，所以要透過這種方式來記錄;
+    $timer.Add_Tick({
+        $clipboard = [System.Windows.Forms.Clipboard]::GetDataObject()
+        if ($clipboard.ContainsImage()) {
+        	$bitmap = [System.Drawing.Bitmap]$clipboard.getimage()
+
+        	# 將 Bitmap 轉換為二進制數據;
+        	$memoryStream = New-Object System.IO.MemoryStream
+        	$bitmap.Save($memoryStream, [System.Drawing.Imaging.ImageFormat]::Png)
+        	$binaryData = $memoryStream.ToArray()
+
+        	$md5 = [System.Security.Cryptography.MD5]::Create().ComputeHash($binaryData)
+        	$md5HexString = [System.BitConverter]::ToString($md5) -replace "-", ""
+
+        	if ($Script:PreviousImage -eq $md5HexString) {
+        	    # Write-Host "[skip] same image."
+        	    return
+        	}
+
+        	$Script:PreviousImage = $md5HexString # 記錄前一次保存的圖像;
+
+        	$outPath = Join-Path $outDir "$md5HexString.png"
+
+        	if (Test-Path $outPath) {
+        		Write-Host "File already exits: " -NoNewLine
+        		Write-Host $outPath -ForegroundColor Yellow
+        	} else {
+                $bitmap.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+                $datetimeString = "{0:yyyy-MM-dd hh:mm:ss}" -f (get-date)
+                Write-Host "$datetimeString clipboard content saved as: " -NoNewLine
+                Write-Host $outPath -ForegroundColor Yellow
+        	}
+        	$memoryStream.Dispose()
+        	$bitmap.Dispose()
+        }
+    })
+
+    $form.add_FormClosing({
+        # Write-Host "close timer"
+        $timer.Stop()
+    })
+
+    $timer.Start()
+    $form.KeyPreview = $true
+    # $form.ShowDialog() # 如果沒有用 | Out-Null 或者 void 就會產生會傳值，直接關掉會顯示回傳值Cancel
+    [void]$form.ShowDialog()
+}

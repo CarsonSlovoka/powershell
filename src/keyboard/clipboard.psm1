@@ -11,23 +11,26 @@ function Save-ClipboardImage {
         $img.save("c:\temp\temp.jpg")
         ```
     .Parameter outDir
-        圖片要存放的目錄
+        圖片要存放的目錄, 預設為工作目錄
     .Example
+        Save-ClipboardImage
+    .Example
+        Save-ClipboardImage "C:\temp"
     .Link
         https://stackoverflow.com/a/55226209/9935654
     #>
     param (
-    [Parameter(Mandatory)]
-    [ValidateScript({
-        # 確保至少是資料夾或者檔案;
-        if(-Not ($_ | Test-Path) ){
-            throw "File or folder does not exist"
-        }
-        if($_ | Test-Path -PathType Leaf) { # 如果有枝葉，就是檔案，我們只允許目錄;
-            throw "The Path argument must be a folder, not the file."
-        }
-        return $true
-    })][string]$outDir
+        [Parameter()]
+        [ValidateScript({
+            # 確保至少是資料夾或者檔案;
+            if(-Not ($_ | Test-Path) ){
+                throw "File or folder does not exist"
+            }
+            if($_ | Test-Path -PathType Leaf) { # 如果有枝葉，就是檔案，我們只允許目錄;
+                throw "The Path argument must be a folder, not the file."
+            }
+            return $true
+        })][string]$outDir = (Get-Item .).FullName
     )
 
     Add-Type -AssemblyName System.Windows.Forms
@@ -36,7 +39,7 @@ function Save-ClipboardImage {
     if ($clipboard.ContainsImage()) {
         $bitmap = [System.Drawing.Bitmap]$clipboard.getimage()
 
-        # 將 Bitmap 轉換為二進制數據
+        # 將 Bitmap 轉換為二進制數據;
         $memoryStream = New-Object System.IO.MemoryStream
         $bitmap.Save($memoryStream, [System.Drawing.Imaging.ImageFormat]::Png)
         $binaryData = $memoryStream.ToArray()
@@ -47,18 +50,18 @@ function Save-ClipboardImage {
         $outPath = Join-Path $outDir "$md5HexString.png"
 
         if (Test-Path $outPath) {
-            Write-Host "File already exits:" -NoNewLine
+            Write-Host "File already exits: " -NoNewLine
             Write-Host $outPath -ForegroundColor Yellow
-            $memoryStream.Dispose()
-            $bitmap.Dispose()
-            return
+        } else {
+            $bitmap.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+            $datetimeString = "{0:yyyy-MM-dd hh:mm:ss}" -f (get-date)
+            Write-Host "$datetimeString clipboard content saved as: " -NoNewLine
+            Write-Host $outPath -ForegroundColor Yellow
         }
-        $bitmap.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
-        Write-Output "clipboard content saved as $out"
         $memoryStream.Dispose()
         $bitmap.Dispose()
     } else {
-        Write-Output "clipboard does not contains image data"
+        Write-Host "clipboard does not contains image data"
     }
 }
 
@@ -322,7 +325,7 @@ function Show-ClipboardHistory {
                 "E" { # Exit
                     $This.Close()
                 }
-                default {$Null}
+                default {$null}
                 }
             }
         })

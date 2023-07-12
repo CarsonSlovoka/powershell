@@ -109,9 +109,11 @@ function Show-ClipboardHistory {
 
     <#
     TODO:
-        - 更新時間: 在listbox中新增一個更新時間欄位
-        - filter: 可以依據搜尋剪貼簿的內容或者時間搜尋
-        - image: 不光只是text，連圖片也可以支持
+        - Add create time: add a column at the list box to show the create time.
+        - image support: allow the history record of the image.
+        - filter: filter can search {text, image, date}
+        - hotkey support: add two(copy, paste) columns at the list box which allow the user to input the hotkey
+            for example, you can set the hotkey on item1, and define {Ctrl+1} equal to copy item1, {Alt+1} equal to paste item1, etc.
     #>
 
     $runspaceHash = [hashtable]::Synchronized(@{}) # 建立同步的hashtable，它可以保證每個線程在調用它，都能得到相同的結果;

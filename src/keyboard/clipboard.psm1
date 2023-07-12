@@ -339,7 +339,7 @@ function Watch-ClipboardImage {
 
         檔名使用md5來計算，避免重複的檔案不斷被保存
     .Parameter outDir
-        圖片要存放的目錄
+        圖片要存放的目錄, 您之後也可以再透過UI介面來更換目錄位置
     .Parameter interval
         多久(毫秒)查看一次剪貼簿
     .Example
@@ -371,11 +371,34 @@ function Watch-ClipboardImage {
     Add-Type -AssemblyName System.Windows.Forms
 
     $form = New-Object Windows.Forms.Form
+    $form.Text = "spy clipboard" # title
+    $form.Size = [System.Drawing.Size]::new(400, 200)
+    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $form.Add_KeyDown({
         if($_.KeyCode -eq "Escape") {
             $form.Close() # add_FormClosing裡面的程序也會被觸發;
         }
     })
+
+    $btnSelectOutPath = New-Object Windows.Forms.Button
+    # $btnSelectOutPath.Location = '20,20' # 沒寫全部都是從0, 0開始
+    $btnSelectOutPath.Size = '300,30'
+    $btnSelectOutPath.Text = "Select a folder for save the image"
+    $btnSelectOutPath.Add_Click({
+        $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+        $folderBrowser.Description = "Select a folder for save the image"
+        [void]$folderBrowser.ShowDialog()
+        $labelOutPath.Text = $folderBrowser.SelectedPath
+    })
+    $form.Controls.Add($btnSelectOutPath)
+
+
+    $labelOutPath = [System.Windows.Forms.Label]::new()
+    $labelOutPath.Location = '0,100'
+    $labelOutPath.Text = $outDir
+    $labelOutPath.AutoSize = $true
+    $form.Controls.Add($labelOutPath)
+
 
     # TODO: 可以考慮註冊鉤子，這樣就不需要倚靠timer
     $timer = [System.Windows.Forms.Timer]::new()
@@ -401,7 +424,7 @@ function Watch-ClipboardImage {
 
         	$Script:PreviousImage = $md5HexString # 記錄前一次保存的圖像;
 
-        	$outPath = Join-Path $outDir "$md5HexString.png"
+        	$outPath = Join-Path $labelOutPath.Text "$md5HexString.png"
 
         	if (Test-Path $outPath) {
         		Write-Host "File already exits: " -NoNewLine

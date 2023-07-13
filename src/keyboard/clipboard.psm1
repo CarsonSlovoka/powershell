@@ -381,30 +381,64 @@ function Watch-ClipboardImage {
     })
 
     $btnSelectOutPath = New-Object Windows.Forms.Button
-    # $btnSelectOutPath.Location = '20,20' # 沒寫全部都是從0, 0開始
+    # $btnSelectOutPath.Location = '20,20' # 沒寫全部都是從0, 0開始;
     $btnSelectOutPath.Size = '300,30'
     $btnSelectOutPath.Text = "Select a folder for save the image"
     $btnSelectOutPath.Add_Click({
         $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         $folderBrowser.Description = "Select a folder for save the image"
         [void]$folderBrowser.ShowDialog()
-        $labelOutPath.Text = $folderBrowser.SelectedPath
+        $labelOutPath.Text = "OutputDir: $($folderBrowser.SelectedPath)"
     })
     $form.Controls.Add($btnSelectOutPath)
 
+    $trackBar = New-Object System.Windows.Forms.TrackBar
+    $trackBar.Orientation = [System.Windows.Forms.Orientation]::Horizontal
+    $trackBar.Minimum = 100 # 0.1sec
+    $trackBar.Maximum = 20000 # 20sec
+    $trackBar.LargeChange = 1000
+    $trackBar.SmallChange = 100 # step: 0.1 sec # 如果需要的刻度太多，下方就會變成一整條黑線，因為太密了;
+    $trackBar.TickStyle = [System.Windows.Forms.TickStyle]::None # 取消下方的刻度線;
+    $trackBar.Value = $interval
+    $trackBar.Location = '110,50'
+    $form.Controls.Add($trackBar)
+
+    # 創建 TextBlock 顯示 Slider 的值;
+    $labelInterval = New-Object System.Windows.Forms.Label
+    $labelInterval.AutoSize = $true
+    $labelInterval.Location = '0,50'
+    $labelInterval.Text = "Interval: $interval sec"
+    $form.Controls.Add($labelInterval)
 
     $labelOutPath = [System.Windows.Forms.Label]::new()
     $labelOutPath.Location = '0,100'
-    $labelOutPath.Text = $outDir
+    $labelOutPath.Text = "OutputDir: $outDir"
     $labelOutPath.AutoSize = $true
     $form.Controls.Add($labelOutPath)
+
+
+    $btnOpenOutputDir = New-Object Windows.Forms.Button
+    $btnOpenOutputDir.Location = '0,125'
+    $btnOpenOutputDir.Text = "Open"
+    $btnOpenOutputDir.AutoSize = $true
+    $btnOpenOutputDir.Add_Click({
+        Start-Process "$($labelOutPath.Text.Substring('OutputDir: '.Length))"
+    })
+    $form.Controls.Add($btnOpenOutputDir)
 
 
     # TODO: 可以考慮註冊鉤子，這樣就不需要倚靠timer
     $timer = [System.Windows.Forms.Timer]::new()
     $timer.Interval = $interval
     $Script:PreviousImage = "" # event內的變數作用域受限，所以要透過這種方式來記錄;
+
+    $trackBar.Add_ValueChanged({
+        $labelInterval.Text = "Interval: $($trackBar.Value/1000) sec"
+        $timer.Interval = $trackBar.Value
+    })
+
     $timer.Add_Tick({
+        # Write-Host "tick" # 可以用來確定interval的修改符合預期;
         $clipboard = [System.Windows.Forms.Clipboard]::GetDataObject()
         if ($clipboard.ContainsImage()) {
         	$bitmap = [System.Drawing.Bitmap]$clipboard.getimage()
@@ -424,7 +458,7 @@ function Watch-ClipboardImage {
 
         	$Script:PreviousImage = $md5HexString # 記錄前一次保存的圖像;
 
-        	$outPath = Join-Path $labelOutPath.Text "$md5HexString.png"
+        	$outPath = Join-Path $labelOutPath.Text.Substring("OutputDir: ".Length) "$md5HexString.png"
 
         	if (Test-Path $outPath) {
         		Write-Host "File already exits: " -NoNewLine

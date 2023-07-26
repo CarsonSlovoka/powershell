@@ -2,6 +2,8 @@ function Convert-LCovToHtml {
     <#
     .Synopsis
         To help you generate an HTML to see the coverage
+
+        For the Deno project, you may need this command to help generate coverage files in HTML format.
     .Description
         Before you run this command, you may need to install `perl.exe`
         run `choco install lcov` to help you.
@@ -25,6 +27,9 @@ function Convert-LCovToHtml {
         https://stackoverflow.com/q/62184806/9935654
     .Link
         https://fredgrott.medium.com/lcov-on-windows-7c58dda07080
+    .Link
+        deno generate lcov
+        https://github.com/CarsonSlovoka/encoding/blob/8c82660095db4c82157da132696fa6efc9c97004/cov2html.ps1#L1-L8
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (

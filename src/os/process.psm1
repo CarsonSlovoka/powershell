@@ -46,9 +46,10 @@ function Watch-IsAlive {
     while ($true) {
         $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
         if ($process -eq $null) {
-            $now = "{0:yyyy-MM-dd hh:mm:ss}" -f (Get-Date)
-            Write-Host "$now program $processName has been closed."
-            break
+            $now = Get-Date
+            $nowStr = "{0:yyyy-MM-dd hh:mm:ss}" -f $now
+            Write-Host "$nowStr program $processName has been closed."
+            return $now
         }
         else {
             Start-Sleep -Seconds $interval

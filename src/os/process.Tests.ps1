@@ -18,4 +18,10 @@ Describe "os.process.psm1" {
             $runSpace.Dispose()
         }
     }
+
+    It "Calls Watch-IsAlive" {
+        $beginTime = Get-Date
+        $endTime = Watch-IsAlive notExistsProcess 3
+        $endTime -gt $beginTime | Should -Be $true
+    }
 }

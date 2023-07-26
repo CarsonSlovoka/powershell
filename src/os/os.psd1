@@ -19,6 +19,7 @@ FunctionsToExport = @(
 
     # process
     'Stop-ProcessByName',
+    'Watch-IsAlive',
 
     # file
     'Remove-NotInListFiles',

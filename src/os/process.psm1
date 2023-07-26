@@ -18,3 +18,41 @@ function Stop-ProcessByName {
     }
     $process | ForEach-Object {Stop-Process -Id $_.Id}
 }
+
+function Watch-IsAlive {
+    <#
+    .Description
+        檢查某應用程式是否還活著
+    .Parameter processName
+        應用程式名稱，不需要加上.exe
+    .Parameter interval
+        每間隔多久確認一次, 單位:秒
+    .Example
+        Watch-IsAlive notepad 5
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string]$processName,
+        [Parameter(Mandatory)]
+        [int]$interval
+    )
+
+    $now = "{0:yyyy-MM-dd hh:mm:ss}" -f (Get-Date)
+    Write-Host "$now Start Watch: " -NoNewLine
+    Write-Host $processName -ForegroundColor Yellow -NoNewLine
+    Write-Host " is alive..."
+
+    while ($true) {
+        $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
+        if ($process -eq $null) {
+            $now = "{0:yyyy-MM-dd hh:mm:ss}" -f (Get-Date)
+            Write-Host "$now program $processName has been closed."
+            break
+        }
+        else {
+            Start-Sleep -Seconds $interval
+            Write-Verbose "isAlive"
+        }
+    }
+}

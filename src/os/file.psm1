@@ -262,7 +262,7 @@ function Rename-FileByList {
         return $o
     }
 
-    # 逐行讀取檔案內容
+    # 逐行讀取檔案內容;
     Get-Content $srcLst | ForEach-Object {
         $line = $_
         $oldFileName, $newFileName = $line -split $sep
@@ -276,11 +276,11 @@ function Rename-FileByList {
             $newFilePath = $newFileName
         }
 
-        # 檢查舊檔案是否存在
+        # 檢查舊檔案是否存在;
         if (Test-Path $oldFilePath) {
-            # 重新命名檔案
+            # 重新命名檔案;
             try {
-                # Rename-Item只能重新命名，不能更改檔案的目錄位置
+                # Rename-Item只能重新命名，不能更改檔案的目錄位置;
                 Rename-Item -Path $oldFilePath -NewName $newFilePath
             } catch {
                 $o.Err = $_.Exception.Message

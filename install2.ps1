@@ -9,7 +9,7 @@ if (-not $isAdministrator) {
 # 設定參數
 $repoOwner = "CarsonSlovoka"
 $repoName = "powershell"
-$releaseTag = "0.0.0"
+$releaseTag = "0.1.0"
 $extractPath = "."
 
 # 下載發行版(zip檔案)

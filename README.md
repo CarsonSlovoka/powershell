@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3">
-      <img src="https://img.shields.io/badge/Made%20with-powershell-0e1620.svg" alt="Made with Go">
+      <img src="https://img.shields.io/badge/Made%20with-powershell-0e1620.svg" alt="Made with powershell">
   </a>
   <a href="https://GitHub.com/CarsonSlovoka/powershell/releases/">
       <img src="https://img.shields.io/github/release/CarsonSlovoka/powershell" alt="Latest release">

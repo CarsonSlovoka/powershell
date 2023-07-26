@@ -1,4 +1,18 @@
-# powershell
+<p align="center">
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3">
+      <img src="https://img.shields.io/badge/Made%20with-powershell-0e1620.svg" alt="Made with Go">
+  </a>
+  <a href="https://GitHub.com/CarsonSlovoka/powershell/releases/">
+      <img src="https://img.shields.io/github/release/CarsonSlovoka/powershell" alt="Latest release">
+  </a>
+  <a href="https://github.com/CarsonSlovoka/powershell/blob/master/LICENSE">
+      <img src="https://img.shields.io/github/license/CarsonSlovoka/powershell.svg" alt="License">
+  </a>
+
+  <img src="https://img.shields.io/badge/coverage-_68-blue?labelColor=green&color=gray" alt="coverage">
+</p>
+
+# ![logo](https://raw.githubusercontent.com/PowerShell/PowerShell/master/assets/ps_black_64.svg?sanitize=true) powershell
 
 一些簡單的腳本，幫助您工作更有效率
 
@@ -18,7 +32,9 @@
 
 如果您想要使用UI加入可以透過SystemPropertiesProtection.exe來加入
 
-> start $env:SystemRoot\System32\SystemPropertiesProtection.exe # 可以快速開啟env的設定
+```yaml
+start $env:SystemRoot\System32\SystemPropertiesProtection.exe # 可以快速開啟env的設定
+```
 
 ### 使用腳本來加入系統變數
 

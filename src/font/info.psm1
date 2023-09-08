@@ -32,6 +32,7 @@ function Get-InstallGlyphTypeface {
         $glyphTypefaceMap = Get-InstallGlyphTypeface
         $glyphTypefaceMap["Arial.ttf"]
         $glyphTypefaceMap["Arial.ttf"].Win32FamilyNames
+        $glyphTypefaceMap["Arial.ttc"] | select -Property Baseline, Win32FamilyNames
 
         # 查看所有的Win32FamilyNames
         $valueCollection = $glyphTypefaceMap.Values

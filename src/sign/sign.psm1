@@ -9,15 +9,16 @@ function Add-DigitalSignup {
     .Parameter signCertFile
         mypfx.pfx
     .Example
-        Add-DigitalSignup (Get-Item 'C:\..\my.exe') `
-            (Get-Item 'C:\xxx\my.crt') `
-            (Get-Item 'C:\xxx\my.pfx') `
+        Add-DigitalSignup 'C:\..\my.exe' `
+            'C:\xxx\my.crt' `
+            'C:\xxx\my.pfx' `
             -password '123' `
             -subjectName 'xxx Taiwan Inc'
     .Example
+        # 路徑也可以用Get-Item(但是多此一舉), 另外也可以再加上Verbose觀看詳細資訊
         Add-DigitalSignup (Get-Item 'C:\..\my.exe') `
-            (Get-Item 'C:\xxx\my.crt') `
-            (Get-Item 'C:\xxx\my.pfx') `
+            'C:\xxx\my.crt' `
+            'C:\xxx\my.pfx' `
             -password '123' `
             -subjectName 'xxx Taiwan Inc' -Verbose
     .Link
@@ -25,13 +26,28 @@ function Add-DigitalSignup {
     #>
     param (
         [Parameter(Mandatory)]
-        [System.IO.FileSystemInfo]$exePath,
+        [ValidateScript({
+            if ((Get-Item $_ -ErrorAction SilentlyContinue) -eq $null) {
+                throw "File not exists: $_"
+            }
+            return $true
+        })][string]$exePath,
 
         [Parameter(Mandatory)]
-        [System.IO.FileSystemInfo]$acFile,
+        [ValidateScript({
+            if ((Get-Item $_ -ErrorAction SilentlyContinue) -eq $null) {
+                throw "File not exists: $_"
+            }
+            return $true
+        })][string]$acFile, # ac
 
         [Parameter(Mandatory)]
-        [System.IO.FileSystemInfo]$signCertFile, # pfx
+        [ValidateScript({
+            if ((Get-Item $_ -ErrorAction SilentlyContinue) -eq $null) {
+                throw "File not exists: $_"
+            }
+            return $true
+        })][string]$signCertFile, # f pfx
 
         [Parameter()]
         [string]$subjectName, # /n
@@ -65,7 +81,7 @@ function Add-DigitalSignup {
     }
 
     if ($signToolExePath -eq $null) {
-        Write-Error "couldn't found the signTool.exe"
+        Write-Error "couldn't find the signTool.exe"
         return
     }
 

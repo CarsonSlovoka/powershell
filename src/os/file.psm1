@@ -295,3 +295,114 @@ function Rename-FileByList {
     }
     return $o
 }
+
+function Split-File {
+    <#
+    .Synopsis
+        將文件拆分
+    .Description
+        您可以將exe檔案拆分成許多小檔案
+    .Parameter filePath
+        要被拆分的檔案路徑
+    .Parameter n
+        要拆分成幾份(需要大於0)
+    .Parameter outputDir
+        輸出的目錄
+    .Parameter ext
+        每個輸出項目的副檔名
+    .Example
+        Split-File temp.log 3
+    #>
+    param (
+        [Parameter(Mandatory)]
+        [ValidateScript({
+             if ((Get-Item $_ -ErrorAction SilentlyContinue) -eq $null) {
+                throw "File not exists: $_"
+             }
+             return $true
+        })][string]$filePath,
+        [Parameter(Mandatory)]
+        [ValidateScript({
+            if ($_ -eq 0 -or $_ -lt 0) {
+                throw "n must greater than 0"
+            }
+            return $true
+        })][int]$n,
+        [Parameter()]
+        [string]$outputDir = ".",
+        [Parameter()]
+        [string]$ext = "sub"
+    )
+
+    # 讀取執行檔，並將其拆分成n份;
+    [byte]$fileContent | Out-Null
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        $fileContent = Get-Content -Path $filePath -AsByteStream -Raw
+    } else {
+        $fileContent = Get-Content -Path $filePath -Encoding Byte -Raw
+    }
+
+    # $aBytes = $fileContent[0..(($fileContent.Length / 2) - 1)]
+    # $bBytes = $fileContent[($fileContent.Length / 2)..($fileContent.Length - 1)]
+    # 計算每份的長度;
+    $partLength = [math]::Ceiling($fileContent.Length / $n)
+    # $splitContent = @()
+    for ($i = 0; $i -lt $n; $i++) {
+        $startIndex = $i * $partLength
+        $endIndex = [math]::Min(($startIndex + $partLength - 1), ($fileContent.Length - 1))
+
+        # 從原始檔案中提取分段
+        $partContent = $fileContent[$startIndex..$endIndex]
+
+        # 將分段添加到陣列中
+        # $splitContent += $partContent
+
+        # 寫檔
+        if ($PSVersionTable.PSVersion.Major -ge 6) {
+            $partContent | Set-Content -Path (Join-Path $outputDir "$i.$ext") -AsByteStream -NoNewline
+        } else {
+            $partContent | Set-Content -Path (Join-Path $outputDir "$i.$ext") -Encoding Byte -NoNewline
+        }
+    }
+    # foreach ($subContent in $splitContent) {}
+}
+
+function Merge-Files {
+    <#
+    .Synopsis
+        將多個檔案以byte的形式串接形成新的檔案
+    .Description
+        如果要提供給其他電腦, 要確保兩台電腦的encoding是一致的
+    .Parameter fileArray
+        一個array，每個元素代表著檔案路徑
+    .Parameter outputPath
+        輸出的檔案路徑
+    .Example
+        Merge-Files @("a.txt", "b.txt") "output.txt"
+    .Example
+        Merge-Files (Get-Item *.sub) "output.txt"
+    .Example
+        Merge-Files (Get-Item (Join-Path $wkDir *.sub)) output.txt
+    #>
+    param (
+        [Parameter(Mandatory)]
+        [Object[]]$fileArray,
+        [Parameter(Mandatory)]
+        [string]$outputPath
+    )
+
+    [byte]$combinedBytes
+    foreach ($fileContent in $fileArray) {
+        if ($PSVersionTable.PSVersion.Major -ge 6) {
+            $combinedBytes += Get-Content -Path $fileContent -AsByteStream -Raw
+        } else {
+            $combinedBytes += Get-Content -Path $fileContent -Encoding Byte -Raw
+        }
+    }
+
+    if ($PSVersionTable.PSVersion.Major -ge 7) {
+        $combinedBytes | Set-Content -Path $outputPath -AsByteStream -NoNewline
+    } else {
+        $combinedBytes | Set-Content -Path $outputPath -Encoding Byte -NoNewline
+    }
+}

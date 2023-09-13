@@ -253,7 +253,8 @@ Describe "Rename-FileByList" {
     }
 
     BeforeEach {
-        Out-File $srcLst -Encoding utf8NoBOM # 創建或者清除src.lst的內容
+        # Out-File $srcLst -Encoding utf8NoBOM # powershell 5沒有utf8NoBOM的encoding，所以如果沒有影響，使用utf8來代替;
+        Out-File $srcLst -Encoding utf8 # 創建或者清除src.lst的內容
 
         # 清除所有被模擬的文件，避免因為測試案例的殘留
         Remove-Item $testFilesDir -Recurse
@@ -271,8 +272,8 @@ Describe "Rename-FileByList" {
         Set-Content $srcLst -Value $srcContent -Force -Encoding utf8
 
         # 創建測試檔案
-        Out-File (Join-Path $testFilesDir "old-01.png") -Encoding utf8NoBOM
-        Out-File (Join-Path $testFilesDir "old-02.png") -Encoding utf8NoBOM
+        Out-File (Join-Path $testFilesDir "old-01.png") -Encoding utf8
+        Out-File (Join-Path $testFilesDir "old-02.png") -Encoding utf8
 
         $o = Rename-FileByList $srcLst -wkDir $testFilesDir -ext ".png"
         $o.Err | Should -BeNullOrEmpty
@@ -323,5 +324,54 @@ Describe "Rename-FileByList" {
 
     AfterAll {
         Remove-Item $wkDir -Recurse
+    }
+}
+
+Describe 'Split-File and Merge-Files' {
+    $wkDir = Join-Path $PSScriptRoot "temp" # It的變數會受到這個影響，不受到BeforeAll影響
+    $testFile = Join-Path $wkDir "test.txt"
+    # $srcLines = (1, 2, 3) # 注意這邊的變數只能對It的內容有作用，沒辦法傳遞到It中的大括號內
+    BeforeAll {
+        $wkDir = Join-Path $PSScriptRoot "temp"
+        $srcLines = (
+            '123',
+            '456',
+            'abc',
+            "def`n" # lf
+        )
+        # 建立工作目錄;
+        New-Item $wkDir -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
+    BeforeEach {
+        $testFile = Join-Path $wkDir "test.txt"
+        $srcContent = $srcLines -join "`n"
+        Set-Content $testFile -Value $srcContent -Force -Encoding utf8 -NoNewline # 確保測試檔案一致 (檔案不存在會建立，檔案已經存在會全部清除重寫);
+    }
+
+    It "Split-File $testFile 2 -outputDir $wkDir" {
+        Split-File $testFile 2 -outputDir $wkDir
+
+        <# 這樣寫在powershell5會錯，拆分的內容不對，不是各拆一半，所以改將0.sub, 1.sub讀到的所有內容合併要和原來的相同
+        $str = Get-Content (Join-Path $wkDir '0.sub') -Encoding 'utf8' -Raw # 要加上Raw整會是整個字串，否則會變成array;
+        $str | Should -Be (($srcLines[0..1] -join "`n") + "`n") # [0..n] 有包含n;
+
+        $str = Get-Content (Join-Path $wkDir '1.sub') -Encoding 'utf8' -Raw
+        $str | Should -Be ($srcLines[2..($srcLines.Length - 1)] -join "`n")
+        #>
+        $part1 = Get-Content (Join-Path $wkDir '0.sub') -Encoding 'utf8' -Raw
+        $part2 = Get-Content (Join-Path $wkDir '1.sub') -Encoding 'utf8' -Raw
+        $part1 + $part2 | Should -Be $srcContent
+    }
+
+    It "Merge-Files (Get-Item *.sub) output.txt" {
+        $outputPath = Join-Path $wkDir merge.txt
+        Merge-Files (Get-Item (Join-Path $wkDir *.sub)) $outputPath
+        $str = Get-Content $outputPath -Encoding 'utf8' -Raw
+        $str | Should -Be ($srcLines -join "`n")
+    }
+
+    AfterAll {
+        Remove-Item $wkDir -Recurse -ErrorAction SilentlyContinue
     }
 }

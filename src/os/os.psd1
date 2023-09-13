@@ -24,7 +24,9 @@ FunctionsToExport = @(
     # file
     'Remove-NotInListFiles',
     'Rename-WithSerialNumber',
-    'Rename-FileByList'
+    'Rename-FileByList',
+    'Split-File',
+    'Merge-Files'
 )
 CmdletsToExport = @()
 VariablesToExport = '*'

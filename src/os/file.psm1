@@ -337,9 +337,10 @@ function Split-File {
     # 讀取執行檔，並將其拆分成n份;
     [byte]$fileContent | Out-Null
     if ($PSVersionTable.PSVersion.Major -ge 6) {
-        $fileContent = Get-Content -Path $filePath -AsByteStream -Raw
+        # $fileContent = Get-Content -Path $filePath -AsByteStream -Raw # 這樣會很慢;
+        $fileContent = Get-Content -Path $filePath -AsByteStream -ReadCount 0 -Raw | foreach { $_ }
     } else {
-        $fileContent = Get-Content -Path $filePath -Encoding Byte -Raw
+        $fileContent = Get-Content -Path $filePath -Encoding Byte -ReadCount 0 -Raw | foreach { $_ }
     }
 
     # $aBytes = $fileContent[0..(($fileContent.Length / 2) - 1)]
@@ -359,9 +360,10 @@ function Split-File {
 
         # 寫檔
         if ($PSVersionTable.PSVersion.Major -ge 6) {
-            $partContent | Set-Content -Path (Join-Path $outputDir "$i.$ext") -AsByteStream -NoNewline
+            # $partContent | Set-Content -Path (Join-Path $outputDir "$i.$ext") -AsByteStream -NoNewline # 用管道寫會很慢;
+            Set-Content -Path (Join-Path $outputDir "$i.$ext") -Value $partContent -AsByteStream -NoNewline
         } else {
-            $partContent | Set-Content -Path (Join-Path $outputDir "$i.$ext") -Encoding Byte -NoNewline
+            Set-Content -Path (Join-Path $outputDir "$i.$ext") -Value $partContent -Encoding Byte -NoNewline
         }
     }
     # foreach ($subContent in $splitContent) {}
@@ -391,18 +393,18 @@ function Merge-Files {
         [string]$outputPath
     )
 
-    [byte]$combinedBytes
+    [byte]$combinedBytes | Out-Null
     foreach ($fileContent in $fileArray) {
         if ($PSVersionTable.PSVersion.Major -ge 6) {
-            $combinedBytes += Get-Content -Path $fileContent -AsByteStream -Raw
+            $combinedBytes += Get-Content -Path $fileContent -AsByteStream -ReadCount 0 -Raw | foreach { $_ }
         } else {
-            $combinedBytes += Get-Content -Path $fileContent -Encoding Byte -Raw
+            $combinedBytes += Get-Content -Path $fileContent -Encoding Byte -ReadCount 0 -Raw | foreach { $_ }
         }
     }
 
     if ($PSVersionTable.PSVersion.Major -ge 7) {
-        $combinedBytes | Set-Content -Path $outputPath -AsByteStream -NoNewline
+        Set-Content -Path $outputPath -Value $combinedBytes -AsByteStream -NoNewline
     } else {
-        $combinedBytes | Set-Content -Path $outputPath -Encoding Byte -NoNewline
+        Set-Content -Path $outputPath -Value $combinedBytes -Encoding Byte -NoNewline
     }
 }

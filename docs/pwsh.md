@@ -18,5 +18,5 @@ powershell5用的不是UTF8，所以運行的時候，遇到腳本的中文可�
 
 如果是windows, 64，可以選擇`PowerShell-7.3.5-win-x64.zip`下載
 
-之後解壓縮，將裡面的檔案全部放到`$PSHome`<sup>`C:\Program Files\PowerShell\7`</sup>資料夾裡面即可。
+之後解壓縮，將裡面的檔案全部放到`$PSHome`<sup>`C:\Program Files\PowerShell\7`</sup>資料夾裡面即可 (或者整個資料夾換掉都行)
 > 您可以直接把原本`$PSHome`目錄重新命名當作備份以防萬一

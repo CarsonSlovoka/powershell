@@ -65,6 +65,14 @@ function Install-App {
 
   <Identity Name="IdExampleApp" Publisher="CN=Example" Version="1.0.0.0" />
 
+  可以用Get-StartApps來查詢
+  Get-StartApps -Name XXX* | Select-Object -ExpandProperty AppID
+  其中的XXX*是displayName，也就是我們透過displayName來查詢它的AppID，AppID會像是以下的內容
+  xxx_858vjfx162zqc!App
+  前面的xxx就是AppxPackage的Name名稱
+
+  或者乾脆用Get-AppxPackage -Name xxx* 使用它給的Name也行
+
 .Example
     # 透過Package.Identity.Name去移除
     Uninstall-App "IdExampleApp"
@@ -82,11 +90,12 @@ function Uninstall-App {
         [string] $packageIdName
     )
 
-    $packageFullName = Get-AppxPackage -Name "$packageIdName" # 記住他的PackageFullName
-    if ($packageFullName -eq $null) {
+    $appPackage = Get-AppxPackage -Name $packageIdName
+    if ($appPackage -eq $null) {
         Write-Error "Package.Identity.Name not found error. $packageIDName"
         return
     }
 
-    Remove-AppxPackage -Package "$packageFullName" -Confirm
+    # Remove-AppxPackage -Package $appPackage.PackageFullName -Confirm # 可以直接將appPackage整個變數內容給它或者要用PackageFullName都可以成功;
+    Remove-AppxPackage -Package $appPackage -Confirm
 }

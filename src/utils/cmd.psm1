@@ -3,6 +3,19 @@ function Set-ByPass {
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -F
 }
 
+function Remove-PSReadlineHistory {
+    <#
+    .Description
+        刪除所有powershell的歷史紀錄(按上鍵自動帶出的內容)
+    #>
+    [CmdletBinding(SupportsShouldProcess)] # -Confirm, -WhatIf,...
+    param () # 如果加了CmdletBinding就必須要放;
+
+    # Clear-History # 這個可以不需要刪除，它紀錄本視窗的歷史紀錄，視窗關閉後就不見。 可以透過 Get-History 來查詢;
+
+    Remove-Item (Get-PSReadlineOption).HistorySavePath
+}
+
 # 注意@""@，前面@"之後一定要空行，之後"@也要在新的一行，且最後不能有多的空白！;
 
 Set-Alias byPass Set-ByPass -Description @"

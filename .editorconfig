@@ -21,17 +21,18 @@ indent_style = space
 [*.bat]
 end_of_line = crlf
 
-[*.{go, puml, nsi, nsh, Makefile, mk}]
+[*.{go,puml,nsi,nsh,Makefile,mk}]
 indent_style = tab
 
 
-[*.{yml, yaml, json, js, css, html, gohtml, gotmpl, toml, scss, sass, xml, lua}]
+[*.{yml,yaml,json,js,css,gotmpl,toml,scss,sass,xml,lua}]
 indent_size = 2
 
-[*.{html, gohtml}]
+[*.{html,gohtml}]
+indent_size = 2
 max_line_length = off
 
-[*.{md, markdown}]
+[*.{md,markdown}]
 indent_size = 2
 max_line_length = off
 

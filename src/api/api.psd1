@@ -13,8 +13,11 @@ FunctionsToExport = @(
     'Request-OpenAI-OpenPlayground',
     'Request-OpenAI-ListThread',
     'Request-OpenAI-GetThreads',
+    'Request-OpenAI-CreateMessage',
     'Request-OpenAI-GetThreadMsg',
-    'Request-OpenAI-DeleteThread'
+    'Request-OpenAI-ListThreadMsg',
+    'Request-OpenAI-DeleteThread',
+    'Request-OpenAI-ModifyMessage'
 )
 AliasesToExport = @(
 )

@@ -6,12 +6,16 @@ Description = ''
 PowerShellVersion = '7.0'
 NestedModules = @(
     'openai/help.psm1',
+
+    # Assistants
     'openai/msg.psm1',
     'openai/thread.psm1',
     'openai/runs.psm1'
+
+    'openai/audio.psm1'
 )
 FunctionsToExport = @(
-    # openai/*
+    # openai/thread,message
     'Request-OpenAI-Help',
     'Request-OpenAI-OpenPlayground',
 
@@ -29,7 +33,11 @@ FunctionsToExport = @(
     'Request-OpenAI-GetRun',
     'Request-OpenAI-ListRunSteps',
     'Request-OpenAI-ModifyRun',
-    'Request-OpenAI-CancelRun'
+    'Request-OpenAI-CancelRun',
+
+    # openai/audio
+    'Request-OpenAI-CreateSpeech',
+    'Request-OpenAI-CreateTranscription'
 )
 AliasesToExport = @(
 )

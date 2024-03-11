@@ -5,19 +5,26 @@ GUID = '63154f9a-e197-4121-9747-b45969802244'
 Description = ''
 PowerShellVersion = '7.0'
 NestedModules = @(
-    'openai.psm1'
+    'openai/help.psm1',
+    'openai/msg.psm1',
+    'openai/thread.psm1',
+    'openai/runs.psm1'
 )
 FunctionsToExport = @(
-    # openai.psm1
+    # openai/*
     'Request-OpenAI-Help',
     'Request-OpenAI-OpenPlayground',
+
     'Request-OpenAI-ListThread',
     'Request-OpenAI-GetThreads',
+    'Request-OpenAI-DeleteThread',
+
     'Request-OpenAI-CreateMessage',
     'Request-OpenAI-GetThreadMsg',
     'Request-OpenAI-ListThreadMsg',
-    'Request-OpenAI-DeleteThread',
-    'Request-OpenAI-ModifyMessage'
+    'Request-OpenAI-ModifyMessage',
+
+    'Request-OpenAI-CreateRun'
 )
 AliasesToExport = @(
 )

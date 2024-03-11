@@ -24,7 +24,12 @@ FunctionsToExport = @(
     'Request-OpenAI-ListThreadMsg',
     'Request-OpenAI-ModifyMessage',
 
-    'Request-OpenAI-CreateRun'
+    'Request-OpenAI-CreateRun',
+    'Request-OpenAI-ListRuns',
+    'Request-OpenAI-GetRun',
+    'Request-OpenAI-ListRunSteps',
+    'Request-OpenAI-ModifyRun',
+    'Request-OpenAI-CancelRun'
 )
 AliasesToExport = @(
 )

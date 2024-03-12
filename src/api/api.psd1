@@ -34,6 +34,8 @@ FunctionsToExport = @(
     'Request-OpenAI-ListRunSteps',
     'Request-OpenAI-ModifyRun',
     'Request-OpenAI-CancelRun',
+    'Request-OpenAI-SubmitToRun',
+    'Request-OpenAI-SubmitToRunEx'
 
     # openai/audio
     'Request-OpenAI-CreateSpeech',

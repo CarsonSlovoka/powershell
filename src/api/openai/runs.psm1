@@ -11,6 +11,8 @@ function Request-OpenAI-CreateRun {
         - metadata
     .PARAMETER threadID
     .EXAMPLE
+        Request-OpenAI-CreateRun thread_... @{assistant_id = 'asst_...'}
+    .EXAMPLE
         # 必填項目
         $body = @{
             assistant_id = 'asst_...'
@@ -124,6 +126,26 @@ function Request-OpenAI-ListRuns {
         往前查詢: 在哪一個訊息id之前
     .EXAMPLE
         Request-OpenAI-ListRuns thread_...
+    .EXAMPLE
+        # 列出thread最後一筆的run物件
+        Request-OpenAI-ListRuns thread_... 1 'desc'
+
+        # 如果有用到函數，那麼會出現required_action，例如:
+        "required_action": { # 要輸入之後才能繼續動作
+            "type": "submit_tool_outputs"
+            "submit_tool_outputs": {
+              "tool_calls": [
+                {
+                  "id": "call_", # 這個是您定義的function參數
+                  "type": "function",
+                  "function": {
+                    "name": "get_stock_price", # function名稱
+                    "arguments": "{\"symbol\":\"TSM\"}" # 然後AI會自己猜你的參數
+                  }
+                }
+              ]
+            }
+        }
     .LINK
         https://platform.openai.com/docs/api-reference/runs/listRuns
     #>
@@ -283,10 +305,11 @@ function Request-OpenAI-CancelRun {
     <#
     .SYNOPSIS
     .DESCRIPTION
+        如果你用playground，執行的期間，旁邊有一個按鈕，按了也可以取消
     .PARAMETER threadID
     .PARAMETER runID
     .EXAMPLE
-        Request-OpenAI-CancelRun thread_... run_... $body
+        Request-OpenAI-CancelRun thread_... run_...
     .OUTPUTS
         {
           "error": {
@@ -309,4 +332,107 @@ function Request-OpenAI-CancelRun {
     curl -X POST "https://api.openai.com/v1/threads/$threadID/runs/$runID/cancel" `
       -H "Authorization: Bearer $env:OPENAI_API_KEY" `
       -H "OpenAI-Beta: assistants=v1"
+}
+
+function Request-OpenAI-SubmitToRun {
+    <#
+    .SYNOPSIS
+    .DESCRIPTION
+        完成之後可以使用，來查看返回的內容
+        Request-OpenAI-ListThreadMsg "thread_" 1 'desc'
+    .PARAMETER threadID
+    .PARAMETER runID
+    .PARAMETER callID
+        在event為thread.run.requires_action之中的required_action裡面的tool_calls中可以找到callID
+        你所呼叫的函數id名稱，注意這個函數的id每次都不一樣，他會結合參數來成為一個唯一的參數，所以每次都不同
+        callID可以透過此來查詢: Request-OpenAI-ListRuns thread_ 1 'desc'
+    .PARAMETER output
+        看你有沒有想要調整，沒有就直接打上OK即可
+    .EXAMPLE
+        # 查詢相關id:
+        Request-OpenAI-ListRuns thread_ 1 'desc'
+
+        # 執行
+        Request-OpenAI-SubmitToRun thread_... run_... call_...
+    .EXAMPLE
+        Request-OpenAI-SubmitToRun thread_... run_... call_... 'OK'
+    .LINK
+        https://platform.openai.com/docs/api-reference/runs/submitToolOutputs
+    #>
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$threadID,
+        [Parameter(Mandatory=$true)]
+        [string]$runID,
+        [Parameter(Mandatory=$true)]
+        [string]$callID,
+
+        [string]$output = "OK"
+    )
+
+    $body = @{
+        tool_outputs = @( # 有可能一個請求裡面有用到多個函數，因此這邊其實是一個array
+            @{
+                tool_call_id = $callID
+                output = $output
+            }
+        )
+    }
+
+    # Wait-Debugger
+    Request-OpenAI-SubmitToRunEx $threadID $runID $body.tool_outputs
+}
+
+function Request-OpenAI-SubmitToRunEx {
+    <#
+    .SYNOPSIS
+    .DESCRIPTION
+        完成之後可以使用，來查看返回的內容
+        Request-OpenAI-ListThreadMsg "thread_" 1 'desc'
+    .PARAMETER threadID
+    .PARAMETER runID
+    .PARAMETER toolOutputs
+    .EXAMPLE
+        # 查找最後一筆run訊息，取得相關id
+        Request-OpenAI-ListRuns thread_ 1 'desc'
+
+        $toolOutputs = @(
+            @{
+                tool_call_id= "call_"
+                # output = 'location: Taoyuan' # 如果這樣變成你要指導他輸出的內容，也就是如果你查詢是台北市，那麼它的輸出可能會變成: 很抱歉，我們只能獲得桃園市的天氣資訊，而不是新北市...
+                output = 'OK' # 因此建議不要去修改output
+            },
+            @{
+                tool_call_id= "call_"
+                output = "OK"
+            }
+        )
+        Request-OpenAI-SubmitToRunEx thread_... run_... $toolOutputs
+    .LINK
+        https://platform.openai.com/docs/api-reference/runs/submitToolOutputs
+    #>
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$threadID,
+        [Parameter(Mandatory=$true)]
+        [string]$runID,
+        [Parameter(Mandatory=$true)]
+        [array]$toolOutputs
+    )
+
+    $body = @{
+        tool_outputs = $toolOutputs
+    }
+
+    curl -X POST "https://api.openai.com/v1/threads/$threadID/runs/$runID/submit_tool_outputs" `
+      -H "Authorization: Bearer $env:OPENAI_API_KEY" `
+      -H 'Content-Type: application/json' `
+      -H 'OpenAI-Beta: assistants=v1' `
+      -d ($body | ConvertTo-Json)
+
+    # Start-Sleep -Seconds 3
+
+    # 呼叫完如果馬上執行，有可能AI還再生成，所以結果不會馬上出來，手動去呼叫
+    Write-Host "請呼叫以下函數取得回應結果"
+    Write-Host ('Request-OpenAI-ListThreadMsg {0} 1 desc' -f $threadID) -ForegroundColor Green
 }

@@ -5,81 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpenAI API Request Interface</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-  <style>
-      :root {
-          --pico-secondary: #5d6b89;
-          --body-width: 55%
-      }
-
-      body {
-          min-height: 150vh;
-      }
-
-      .container {
-          top: 10%;
-          position: absolute;
-          width: var(--body-width);
-          margin: 0 calc((100% - var(--body-width)) / 2);
-      }
-
-      .title-bar {
-          top: 0;
-          position: fixed;
-          display: flex;
-          width: 100%;
-          height: 10%;
-          justify-content: space-between;
-          padding: 1em 2em;
-          background-color: #fff0f0;
-          z-index: 1;
-      }
-
-      aside {
-          display: flex; /* for margin */
-          position: sticky;
-          top: 40%; /* for sticky */
-      }
-
-      aside ul {
-          height: 100%;
-          overflow: auto
-      }
-
-      aside :is(.right, .left) {
-          width: calc((100% - var(--body-width)) / 2);
-          padding: 0 2em;
-      }
-
-      aside .right {
-          margin-left: var(--body-width);
-      }
-
-      footer {
-          column-count: 4;
-          padding: 30% 0;
-      }
-
-      @media (max-width: 800px) {
-          footer {
-              column-count: 2;
-          }
-
-          aside, .title-bar hgroup {
-              display: none;
-          }
-      }
-
-      @media (max-width: 600px) {
-          footer {
-              column-count: 1;
-          }
-      }
-
-      footer dd a {
-          color: var(--pico-secondary, black);
-          text-decoration: none;
-      }
-  </style>
+  <link rel="stylesheet" href="./demo.css"/>
+  <script src="./utils.js"></script>
+  <script src="./api.js"></script>
+  <script src="./main.js" defer></script>
 </head>
 
 <body>
@@ -214,7 +143,7 @@
   </form>
 
   <h2>Audio</h2>
-  <h3>textToSpeech</h3>
+  <h3>TextToSpeech</h3>
   <form id="TextToSpeech">
     <label>要轉換成語音的內容<textarea type="text" cols="100" rows="5"></textarea></label>
     <input type="submit">
@@ -274,138 +203,4 @@
   </footer>
 </main>
 </body>
-
-<script>
-  async function checkResponse(response, panic = true) {
-    if (!response.ok) {
-      const errMsg = await response.text()
-      document.out.innerHTML += errMsg
-      if (panic) {
-        throw Error(`${response.statusText} (${response.status}) | ${errMsg} `)
-      }
-      console.error(`${response.statusText} (${response.status}) | ${errMsg} `)
-      return false
-    }
-    return true
-  }
-</script>
-
-<script>
-  async function DeleteThread(threadID) {
-    const endPoint = `https://api.openai.com/v1/threads/${threadID}`
-    console.log(endPoint)
-    const response = await fetch(endPoint, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${document.apiKey}`,
-        "OpenAI-Beta": "assistants=v1",
-      }
-    })
-    await checkResponse(response, false)
-    document.out.innerHTML += JSON.stringify(await response.json(), null, "  ")
-  }
-
-  async function GetThreads(threadID, limit = 10, order = "asc") {
-    const endPoint = `https://api.openai.com/v1/threads/${threadID}/messages?limit=${limit}&order=${order}`
-    console.log(endPoint)
-    const response = await fetch(endPoint, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${document.apiKey}`,
-        'OpenAI-Beta': 'assistants=v1'
-      }
-    })
-    if (!await checkResponse(response, false)) {
-      return
-    }
-    const obj = await response.json()
-    if (obj.data.length < 2) {
-      document.out.innerHTML += `此thread: ${threadID}資料很少: ${obj.data.length}筆，建議使用deleteThread刪除<br>`
-      return
-    }
-    console.log(obj)
-    document.out.innerHTML += JSON.stringify(obj, null, "  ")
-
-    const assistantID = obj.data[1].assistant_id // 第二筆通常就會有: assistant_id，因為通常第一筆是user的提問，第二筆就會換成機器人問，當然也有可能是user問了兩次之後才執行action run，但這種情況就不討論
-    if (assistantID !== null) {
-      window.open(`https://platform.openai.com/playground?assistant=${assistantID}&mode=assistant&thread=${threadID}`, "_blank") // 一次只能彈一個，如果連續彈好幾個，可能會被瀏覽器封鎖，要允許才可以: chrome://settings/content/popups
-      // return playURL
-    }
-  }
-
-  async function ListAllThreads(sessionKey, limit = 10) {
-    if (sessionKey === "") {
-      alert("sessionKey為空")
-      return
-    }
-    const endPoint = `https://api.openai.com/v1/threads?&limit=${limit}`
-    console.log(endPoint)
-    const progress = document.querySelector("progress")
-    progress.value = 0
-    const response = await fetch(endPoint, {
-      headers: {
-        "Authorization": `Bearer ${sessionKey}`,
-        'OpenAI-Beta': 'assistants=v1'
-      }
-    })
-    if (!await checkResponse(response, false)) {
-      progress.value = 100
-      return
-    }
-    const obj = await response.json()
-    const step = Math.trunc(100 / obj.data.length) // 進度不能有小數
-    for (const e of obj.data) {
-      // created_at: 1710226246
-      // new Date(1504095567183)
-      // e.created_at = new Date(e.created_at*1000).toLocaleDateString("zh-TW") // convert unix_timestamp to local time // 2024/3/11
-      e.created_at = new Date(e.created_at * 1000).toLocaleString(undefined, {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        hour12: false,
-        minute: '2-digit',
-        second: '2-digit'
-      })
-      const threadID = e.id
-      await GetThreads(threadID, 2, "asc") // 取前2筆即可 // 他會自己再去開啟playground
-      progress.value += step
-    }
-    progress.value = 100
-
-    console.log(obj)
-    document.out.innerHTML += JSON.stringify(obj, null, "  ")
-  }
-</script>
-
-<script>
-  document.forms["config"].onsubmit = e => {
-    e.preventDefault()
-    e.target.querySelector(`input[name=sessionKey]`).onchange()
-    return false
-  }
-
-  const f = document.forms['assistant']
-  document.apiKey = sessionStorage.getItem("apiKey")
-  if (document.apiKey !== "") {
-    document.querySelector("#apiKey").value = document.apiKey
-  }
-
-  document.out = document.querySelector("#output")
-  f.onsubmit = async e => {
-    e.preventDefault()
-    document.out.innerHTML = ""
-    switch (f.action.value) {
-      case "GetThreads":
-        await GetThreads(f.threadID.value, f.limit.value, f.order.value)
-        break
-      case "DeleteThread":
-        await DeleteThread(f.threadID.value)
-        break
-    }
-    return false
-  }
-</script>
 </html>

@@ -1,7 +1,7 @@
-async function checkResponse(response, panic = true) {
+async function checkResponse(response, outputElem, panic = true) {
   if (!response.ok) {
     const errMsg = await response.text()
-    document.out.innerHTML += errMsg
+    outputElem.innerHTML += errMsg
     if (panic) {
       throw Error(`${response.statusText} (${response.status}) | ${errMsg} `)
     }

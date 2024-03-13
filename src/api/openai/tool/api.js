@@ -9,7 +9,7 @@ async function DeleteThread(threadID) {
       "OpenAI-Beta": "assistants=v1",
     }
   })
-  await checkResponse(response, false)
+  await checkResponse(response, document.out, false)
   document.out.innerHTML += JSON.stringify(await response.json(), null, "  ")
 }
 
@@ -24,7 +24,7 @@ async function GetThreads(threadID, limit = 10, order = "asc") {
       'OpenAI-Beta': 'assistants=v1'
     }
   })
-  if (!await checkResponse(response, false)) {
+  if (!await checkResponse(response, document.out,false)) {
     return
   }
   const obj = await response.json()
@@ -57,7 +57,7 @@ async function ListAllThreads(sessionKey, limit = 10) {
       'OpenAI-Beta': 'assistants=v1'
     }
   })
-  if (!await checkResponse(response, false)) {
+  if (!await checkResponse(response, document.out, false)) {
     progress.value = 100
     return
   }
@@ -84,4 +84,75 @@ async function ListAllThreads(sessionKey, limit = 10) {
 
   console.log(obj)
   document.out.innerHTML += JSON.stringify(obj, null, "  ")
+}
+
+// CreateSpeech
+// https://platform.openai.com/docs/api-reference/audio/createSpeech
+async function CreateSpeech(outputElem, model, input, voice='onyx', response_format="mp3", speed="1.0") {
+  if (input === "") {
+    alert("無任何內容")
+    return
+  }
+
+  const endPoint = `https://api.openai.com/v1/audio/speech`
+  console.log("SpeechToText", endPoint)
+  const response = await fetch(endPoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${document.apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      input,
+      voice,
+      response_format,
+      speed,
+    }),
+  })
+  await checkResponse(response, outputElem)
+  const url = URL.createObjectURL(await response.blob())
+  const a = document.createElement('a')
+  a.href = url
+  const dateTimeStamp = new Date().toLocaleString(undefined, {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+    second: '2-digit'
+  }).replaceAll(/[\/: ]/g, "")
+  a.download = `openai-${dateTimeStamp}.${response_format}`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// SpeechToText https://platform.openai.com/docs/api-reference/audio/createTranslation
+async function SpeechToText(outputElem, file, model='whisper-1',
+                      lang="", prompt="", response_format = "vtt", temperature=0) {
+  const formData = new FormData()
+  // formData.append
+  formData.set('file', file)
+  formData.set('model', model)
+  formData.set('language', lang)
+  formData.set('prompt', prompt)
+  formData.set('response_format', response_format)
+  formData.set('temperature', `${temperature}`)
+  const endPoint = `https://api.openai.com/v1/audio/transcriptions`
+  console.log("SpeechToText", endPoint)
+  const response = await fetch(endPoint, {
+    method: "POST",
+    headers: {
+      // "Content-Type": "multipart/form-data", // 不需要再加，加了反而會錯，因為他後面少了boundary. FormData會自動生成這些內容
+      "Authorization": `Bearer ${document.apiKey}`,
+    },
+    body: formData,
+  })
+  await checkResponse(response, outputElem)
+  if (response_format==="json") {
+    outputElem.innerHTML = JSON.stringify(await response.json(), null, "  ")
+  } else {
+    outputElem.innerHTML = await response.text()
+  }
 }

@@ -24,3 +24,33 @@ document.forms['assistant'].onsubmit = async e => {
   }
   return false
 }
+
+document.forms['CreateSpeech'].onsubmit = async e => {
+  const f = e.target
+  e.preventDefault()
+  const outElem = f.querySelector("pre.output")
+  outElem.innerHTML = ''
+  await CreateSpeech(outElem,
+    f.model.value,
+    f.input.value,
+    f.voice.value,
+    f.response_format.value,
+    f.speed.value
+  )
+  return false
+}
+
+document.forms['SpeechToText'].onsubmit = async e => {
+  const f = e.target
+  e.preventDefault()
+  const outElem = f.querySelector("pre.output")
+  outElem.innerHTML = ''
+  await SpeechToText(outElem, f.file.files[0],
+    f.model.value,
+    f.lang.value,
+    f.prompt.value,
+    f.response_format.value,
+    f.temperature.value,
+  )
+  return false
+}

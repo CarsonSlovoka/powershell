@@ -51,7 +51,7 @@
       <dd><a href="#global">Global</a></dd>
       <dd><a href="#assistant">Assistant</a></dd>
       <dt>Audio</dt>
-      <dd><a href="#TextToSpeech">TextToSpeech</a></dd>
+      <dd><a href="#CreateSpeech">CreateSpeech</a></dd>
       <dd><a href="#SpeechToText">SpeechToText</a></dd>
     </dl>
   </div>
@@ -143,16 +143,68 @@
   </form>
 
   <h2>Audio</h2>
-  <h3>TextToSpeech</h3>
-  <form id="TextToSpeech">
-    <label>要轉換成語音的內容<textarea type="text" cols="100" rows="5"></textarea></label>
+  <h3>CreateSpeech</h3>
+  <form id="CreateSpeech">
+    <fieldset>
+      <legend>model</legend>
+      <label><input type="radio" name="model" value="tts-1" checked required>tts-1</label>
+      <label><input type="radio" name="model" value="tts-1-hd">tts-1-hd</label>
+    </fieldset>
+
+    <label>要轉換成語音的內容<textarea type="text" name="input"
+                                       cols="1000" rows="5" maxlength="4096"
+                                       title="要生成的語音內容"
+                                       placeholder="書到用時方恨少，肉到肥時方恨多"
+                                       required></textarea></label>
+
+    <fieldset>
+      <legend>Voice</legend>
+      <label><input type="radio" name="voice" value="onyx" required>onyx</label>
+      <label><input type="radio" name="voice" value="alloy">alloy</label> <!-- 官方推薦(應該是英文時才比較好) -->
+      <label><input type="radio" name="voice" value="echo">echo</label>
+      <label><input type="radio" name="voice" value="fable" checked>fable</label> <!-- 中文用這個不錯 -->
+      <label><input type="radio" name="voice" value="nova">nova</label>
+      <label><input type="radio" name="voice" value="shimmer">shimmer</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Response Format</legend>
+      <label><input type="radio" name="response_format" value="mp3" checked>mp3</label>
+      <label><input type="radio" name="response_format" value="opus">opus</label>
+      <label><input type="radio" name="response_format" value="aac">aac</label>
+      <label><input type="radio" name="response_format" value="flac">flac</label>
+      <label><input type="radio" name="response_format" value="wav">wav</label>
+      <label><input type="radio" name="response_format" value="pcm">pcm</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Speed</legend>
+      <label><input type="radio" name="speed" value="0.25">0.25</label>
+      <label><input type="radio" name="speed" value="1.0" checked>1.0</label>
+      <label><input type="radio" name="speed" value="4.0">4.0</label>
+    </fieldset>
+
     <input type="submit">
+    <pre class="output"></pre>
   </form>
 
   <h3><a href="https://platform.openai.com/docs/api-reference/audio/createTranslation">SpeechToText</a></h3>
   <form id="SpeechToText">
     <label>File
-      <input type="file" accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm">
+      <input type="file" name="file" required
+             accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
+             ondrop="((e)=>{
+                e.preventDefault() // 避免檔案被打開
+                // e.target.files = [] // 清空 // e.target.files = [] // 清空
+                console.log(e.target.files)
+                e.target.value = '' // 清空
+                e.target.style.setProperty('background-color', 'initial')
+                e.target.files = e.dataTransfer.files
+                console.log(e.target.files)
+                })(event)"
+             ondragover="((e)=>{e.preventDefault();e.target.style.setProperty('background-color', 'yellow')})(event)"
+             ondragleave="((e)=>{e.preventDefault();e.target.style.setProperty('background-color', 'initial')})(event)"
+      >
       <!-- https://www.geeksforgeeks.org/html-input-accept-attribute/ -->
     </label>
 
@@ -161,7 +213,9 @@
       <label><input type="radio" name="model" value="whisper-1" checked required>whisper-1</label>
     </fieldset>
 
-    <label>Prompt<input type="text" name="prompt"></label>
+    <label>Language<input type="text" name="lang" placeholder="en,zh"></label>
+
+    <label>Prompt<input type="text" name="prompt" placeholder="用簡單的話形容音訊檔案"></label>
 
     <fieldset>
       <legend>response_format</legend>
@@ -172,9 +226,11 @@
       <label><input type="radio" name="response_format" value="verbose_json">verbose_json</label>
     </fieldset>
 
-    <label>temperature<input type="number" min="0" max="1" step="0.1" value="0"></label>
+    <label>temperature<input type="number" name="temperature" min="0" max="1" step="0.1" value="0"></label>
 
     <input type="submit">
+
+    <pre class="output"></pre>
   </form>
 
   <footer>
